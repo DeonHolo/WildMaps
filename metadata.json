@@ -1,0 +1,7 @@
+{
+  "name": "WildMaps",
+  "description": "A Gamified Web-Based Campus Orientation System",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
