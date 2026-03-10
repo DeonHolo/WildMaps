@@ -96,12 +96,12 @@ export default function App() {
       <header className="bg-maroon text-bg p-4 border-b-4 border-ink flex justify-between items-center z-10">
         <h1 className="text-2xl font-bold uppercase tracking-tighter">WildMaps</h1>
         <div className="flex items-center gap-3">
-          <div className="font-mono text-sm bg-gold text-ink px-2 py-1 border-2 border-ink font-bold">
+          <div className="font-mono text-sm bg-gold text-ink px-2 py-1 border-2 border-ink font-bold whitespace-nowrap shrink-0">
             {unlockedLandmarks.length}/4 FOUND
           </div>
           <button 
             onClick={() => setShowSettings(true)}
-            className="p-1 hover:bg-white/20 transition-colors"
+            className="p-1 hover:bg-white/20 transition-colors shrink-0"
           >
             <Settings size={24} />
           </button>

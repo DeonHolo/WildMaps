@@ -113,12 +113,12 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
 
       {/* Progress Section */}
       <div className="bg-white neo-brutalist-card p-5 mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold uppercase tracking-tighter flex items-center">
-            <Trophy size={20} className="mr-2 text-gold" />
-            Exploration Progress
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <h2 className="text-lg font-bold uppercase tracking-tighter flex items-center min-w-0">
+            <Trophy size={20} className="mr-2 text-gold shrink-0" />
+            <span className="truncate">Exploration Progress</span>
           </h2>
-          <div className="font-mono text-sm bg-ink text-gold px-2 py-0.5 font-bold">
+          <div className="font-mono text-sm bg-ink text-gold px-3 py-1 font-bold whitespace-nowrap shrink-0">
             {unlockedCount} / {totalLandmarks}
           </div>
         </div>
