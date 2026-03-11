@@ -133,7 +133,7 @@ export default function MapView({ unlockedLandmarks, onSelectLandmark }: MapView
                 {/* Character Avatar */}
                 <div className="w-16 h-16 shrink-0 neo-brutalist bg-gold overflow-hidden">
                   <img 
-                    src="https://api.dicebear.com/7.x/bottts/svg?seed=Guide&backgroundColor=FFD700" 
+                    src="https://api.dicebear.com/9.x/bottts/svg?seed=Guide&backgroundColor=FFD700" 
                     alt="Guide Character" 
                     className="w-full h-full object-cover"
                     referrerPolicy="no-referrer"

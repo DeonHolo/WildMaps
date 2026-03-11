@@ -9,7 +9,7 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
   {
     title: "Welcome to WildMaps!",
     description: "Your mission is to explore the CIT-U campus and clear the 'Fog of War' by finding key landmarks.",
-    image: "https://api.dicebear.com/7.x/bottts/svg?seed=Guide&backgroundColor=FFD700",
+    image: "https://api.dicebear.com/9.x/bottts/svg?seed=Guide&backgroundColor=FFD700",
     buttonText: "Tell me more"
   },
   {

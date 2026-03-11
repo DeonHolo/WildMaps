@@ -10,7 +10,14 @@ interface BadgesViewProps {
   setAvatarSeed: (seed: string) => void;
 }
 
-const PRESET_AVATARS = ['Felix', 'Luna', 'Jasper', 'Nova', 'Orion', 'Stella'];
+const PRESET_AVATARS = [
+  'Felix&backgroundColor=b6e3f4',
+  'Aneka&backgroundColor=c0aede',
+  'Jasper&backgroundColor=d1d4f9',
+  'Brian&backgroundColor=ffd5dc',
+  'Ginger&backgroundColor=ffdfbf',
+  'Midnight&backgroundColor=c2e9c6'
+];
 
 export default function BadgesView({ unlockedLandmarks, playerName, setPlayerName, avatarSeed, setAvatarSeed }: BadgesViewProps) {
   const [isEditingName, setIsEditingName] = useState(false);
@@ -42,6 +49,14 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
     setIsEditingName(false);
   };
 
+  // Helper to ensure old seeds without background colors still get a default gold background
+  const getAvatarUrl = (seed: string) => {
+    if (seed.includes('backgroundColor=')) {
+      return `https://api.dicebear.com/9.x/bottts/svg?seed=${seed}`;
+    }
+    return `https://api.dicebear.com/9.x/bottts/svg?seed=${seed}&backgroundColor=FFD700`;
+  };
+
   return (
     <>
       <div className="absolute inset-0 p-4 overflow-y-auto">
@@ -54,7 +69,7 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
               className="w-16 h-16 shrink-0 neo-brutalist bg-gold overflow-hidden relative group cursor-pointer"
             >
               <img 
-                src={`https://api.dicebear.com/7.x/bottts/svg?seed=${avatarSeed}&backgroundColor=FFD700`} 
+                src={getAvatarUrl(avatarSeed)} 
                 alt="Avatar" 
                 className="w-full h-full object-cover"
               />
@@ -191,7 +206,7 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
               <div className="flex justify-center mb-2">
                 <div className="w-24 h-24 neo-brutalist bg-gold overflow-hidden">
                   <img 
-                    src={`https://api.dicebear.com/7.x/bottts/svg?seed=${tempAvatarSeed}&backgroundColor=FFD700`} 
+                    src={getAvatarUrl(tempAvatarSeed)} 
                     alt="Current Avatar" 
                     className="w-full h-full object-cover"
                   />
@@ -208,7 +223,7 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
                       className={`aspect-square neo-brutalist overflow-hidden ${tempAvatarSeed === seed ? 'border-4 border-maroon' : 'border-2 border-ink'}`}
                     >
                       <img 
-                        src={`https://api.dicebear.com/7.x/bottts/svg?seed=${seed}&backgroundColor=FFD700`} 
+                        src={getAvatarUrl(seed)} 
                         alt={seed} 
                         className="w-full h-full object-cover bg-gold"
                       />
@@ -218,7 +233,11 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
               </div>
 
               <button 
-                onClick={() => setTempAvatarSeed(`random-${Math.floor(Math.random() * 100000)}`)}
+                onClick={() => {
+                  const randomColors = ['b6e3f4', 'c0aede', 'd1d4f9', 'ffd5dc', 'ffdfbf', 'c2e9c6', 'FFD700', 'ffb3ba', 'baffc9', 'bae1ff'];
+                  const randomColor = randomColors[Math.floor(Math.random() * randomColors.length)];
+                  setTempAvatarSeed(`random-${Math.floor(Math.random() * 100000)}&backgroundColor=${randomColor}`);
+                }}
                 className="w-full neo-brutalist bg-white hover:bg-gray-100 text-ink font-bold uppercase py-2 flex items-center justify-center gap-2 transition-colors"
               >
                 <RotateCcw size={16} />
