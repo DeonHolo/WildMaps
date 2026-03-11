@@ -12,6 +12,16 @@ export interface Landmark {
 }
 
 export const LANDMARKS: Record<LandmarkId, Landmark> = {
+  cafe: {
+    id: 'cafe',
+    name: 'Wildcats Café',
+    description: 'The main dining area for students to relax and grab a bite.',
+    hint: "Follow the delicious aroma of food and the lively chatter of students taking a break!",
+    imageUrl: 'https://picsum.photos/seed/cafe/400/200',
+    x: 65,
+    y: 20,
+    icon: 'Coffee',
+  },
   library: {
     id: 'library',
     name: 'Learning Resource and Activity Center (LRAC)',
@@ -21,16 +31,6 @@ export const LANDMARKS: Record<LandmarkId, Landmark> = {
     x: 20,
     y: 50,
     icon: 'BookOpen',
-  },
-  cafe: {
-    id: 'cafe',
-    name: 'Wildcats Café',
-    description: 'The main dining area for students to relax and grab a bite.',
-    hint: "Follow the smell of food to the upper right part of the campus!",
-    imageUrl: 'https://picsum.photos/seed/cafe/400/200',
-    x: 65,
-    y: 20,
-    icon: 'Coffee',
   },
   statue: {
     id: 'statue',

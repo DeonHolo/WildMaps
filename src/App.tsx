@@ -25,7 +25,9 @@ export default function App() {
     const savedLandmarks = localStorage.getItem('wildmaps_unlocked');
     if (savedLandmarks) {
       try {
-        setUnlockedLandmarks(JSON.parse(savedLandmarks));
+        const parsed = JSON.parse(savedLandmarks);
+        // Remove any existing duplicates from local storage
+        setUnlockedLandmarks(Array.from(new Set(parsed)));
       } catch (e) {
         console.error('Failed to parse saved landmarks');
       }
@@ -61,9 +63,12 @@ export default function App() {
   }, [playerName]);
 
   const handleUnlock = (id: LandmarkId) => {
-    if (!unlockedLandmarks.includes(id)) {
-      setUnlockedLandmarks(prev => [...prev, id]);
-    }
+    setUnlockedLandmarks(prev => {
+      if (!prev.includes(id)) {
+        return [...prev, id];
+      }
+      return prev;
+    });
     setCurrentView('profile');
   };
 

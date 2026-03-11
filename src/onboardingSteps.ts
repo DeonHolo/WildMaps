@@ -26,7 +26,7 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
   },
   {
     title: "Earn Your Badges",
-    description: "Every unlocked sector earns you a unique digital badge. Collect all 4 to become a Campus Master and clear the entire map!",
+    description: "Every unlocked sector earns you a unique digital badge. Collect all 3 to become a Grandmaster Guide and clear the entire map!",
     image: "https://picsum.photos/seed/trophy/400/300",
     buttonText: "Let's Start!"
   }

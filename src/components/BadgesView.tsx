@@ -18,12 +18,12 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
   const isComplete = unlockedCount === totalLandmarks;
 
   const getRank = (count: number) => {
+    if (count >= 3) return 'Grandmaster Guide';
     switch (count) {
-      case 0: return 'Wildcat Cub';
-      case 1: return 'Campus Prowler';
-      case 2: return 'Fierce Hunter';
-      case 3: return 'Alpha Wildcat';
-      default: return 'Wildcat Cub';
+      case 0: return 'Novice Tourist';
+      case 1: return 'Adept Pathfinder';
+      case 2: return 'Master Cartographer';
+      default: return 'Novice Tourist';
     }
   };
 
@@ -163,7 +163,7 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
 
       {isComplete && (
         <div className="mt-6 bg-maroon text-white neo-brutalist-card p-6 text-center animate-in slide-in-from-bottom-4 duration-500 mb-20">
-          <h2 className="text-2xl font-bold uppercase mb-2 text-gold">Campus Master!</h2>
+          <h2 className="text-2xl font-bold uppercase mb-2 text-gold">Grandmaster Guide!</h2>
           <p className="text-sm">You have successfully navigated the entire campus and cleared the Fog of War. You are now ready for the semester!</p>
         </div>
       )}

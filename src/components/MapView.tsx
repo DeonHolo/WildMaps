@@ -85,7 +85,7 @@ export default function MapView({ unlockedLandmarks, onSelectLandmark }: MapView
                 {isUnlocked ? <Unlock size={20} /> : <Lock size={20} />}
               </div>
               <div className={`
-                mt-2 px-2 py-1 text-xs font-bold uppercase neo-brutalist whitespace-nowrap
+                mt-2 px-2 py-1 text-xs font-bold uppercase neo-brutalist text-center max-w-[140px]
                 ${isUnlocked ? 'bg-white text-ink' : 'bg-gray-800 text-white'}
               `}>
                 {isUnlocked ? lm.name : 'Unknown Sector'}
@@ -122,7 +122,7 @@ export default function MapView({ unlockedLandmarks, onSelectLandmark }: MapView
               </div>
 
               {/* Character & Dialogue */}
-              <div className="flex items-end gap-3 mt-2">
+              <div className="flex items-end gap-5 mt-2">
                 {/* Character Avatar */}
                 <div className="w-16 h-16 shrink-0 neo-brutalist bg-gold overflow-hidden">
                   <img 
