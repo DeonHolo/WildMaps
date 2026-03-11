@@ -1,4 +1,4 @@
-export type LandmarkId = 'library' | 'clinic' | 'canteen' | 'osa';
+export type LandmarkId = 'library' | 'statue' | 'cafe';
 
 export interface Landmark {
   id: LandmarkId;
@@ -14,43 +14,33 @@ export interface Landmark {
 export const LANDMARKS: Record<LandmarkId, Landmark> = {
   library: {
     id: 'library',
-    name: 'University Library',
-    description: 'The main hub for research and studying.',
-    hint: "Look for the tallest building with glass windows! It's where all the books live.",
+    name: 'Learning Resource and Activity Center (LRAC)',
+    description: 'The main hub for research, studying, and academic resources.',
+    hint: "Look for the building with the vast collection of books and study areas!",
     imageUrl: 'https://picsum.photos/seed/library/400/200',
     x: 20,
-    y: 30,
+    y: 50,
     icon: 'BookOpen',
   },
-  clinic: {
-    id: 'clinic',
-    name: 'Medical Clinic',
-    description: 'Health and wellness center for students.',
-    hint: "Feeling under the weather? Find the building with the green cross near the gates.",
-    imageUrl: 'https://picsum.photos/seed/clinic/400/200',
-    x: 70,
+  cafe: {
+    id: 'cafe',
+    name: 'Wildcats Café',
+    description: 'The main dining area for students to relax and grab a bite.',
+    hint: "Follow the smell of food to the upper right part of the campus!",
+    imageUrl: 'https://picsum.photos/seed/cafe/400/200',
+    x: 65,
     y: 20,
-    icon: 'Cross',
-  },
-  canteen: {
-    id: 'canteen',
-    name: 'Main Canteen',
-    description: 'Food and dining area.',
-    hint: "Follow the smell of food! It's the large open-air hall with lots of tables.",
-    imageUrl: 'https://picsum.photos/seed/canteen/400/200',
-    x: 80,
-    y: 70,
     icon: 'Coffee',
   },
-  osa: {
-    id: 'osa',
-    name: 'Student Affairs Office',
-    description: 'Support services for student life.',
-    hint: "Need help with orgs or papers? Head to the administrative block.",
-    imageUrl: 'https://picsum.photos/seed/osa/400/200',
-    x: 30,
+  statue: {
+    id: 'statue',
+    name: 'CIT-U Logo Monument',
+    description: 'The iconic symbol of the university featuring the school colors and logo.',
+    hint: "Find the giant letters and the statue near the front of the campus!",
+    imageUrl: 'https://picsum.photos/seed/statue/400/200',
+    x: 80,
     y: 80,
-    icon: 'Users',
+    icon: 'MapPin',
   },
 };
 

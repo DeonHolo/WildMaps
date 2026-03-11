@@ -5,6 +5,7 @@ import MapView from './components/MapView';
 import ScanView from './components/ScanView';
 import BadgesView from './components/BadgesView';
 import SettingsModal from './components/SettingsModal';
+import OnboardingModal from './components/OnboardingModal';
 
 type View = 'map' | 'scan' | 'profile';
 
@@ -15,8 +16,8 @@ export default function App() {
   
   // Profile & Settings State
   const [playerName, setPlayerName] = useState<string>('');
-  const [startTime, setStartTime] = useState<number | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Load from local storage on mount
   useEffect(() => {
@@ -30,6 +31,12 @@ export default function App() {
       }
     }
 
+    // Load Onboarding Status
+    const onboarded = localStorage.getItem('wildmaps_onboarded');
+    if (!onboarded) {
+      setShowOnboarding(true);
+    }
+
     // Load or Generate Player Name
     const savedName = localStorage.getItem('wildmaps_name');
     if (savedName) {
@@ -38,16 +45,6 @@ export default function App() {
       const newName = `Wildcat-${Math.floor(Math.random() * 10000)}`;
       setPlayerName(newName);
       localStorage.setItem('wildmaps_name', newName);
-    }
-
-    // Load or Start Timer
-    const savedTime = localStorage.getItem('wildmaps_start');
-    if (savedTime) {
-      setStartTime(parseInt(savedTime, 10));
-    } else {
-      const now = Date.now();
-      setStartTime(now);
-      localStorage.setItem('wildmaps_start', now.toString());
     }
   }, []);
 
@@ -79,15 +76,19 @@ export default function App() {
     setUnlockedLandmarks([]);
     const newName = `Wildcat-${Math.floor(Math.random() * 10000)}`;
     setPlayerName(newName);
-    const now = Date.now();
-    setStartTime(now);
     
-    localStorage.setItem('wildmaps_start', now.toString());
     localStorage.setItem('wildmaps_name', newName);
     localStorage.setItem('wildmaps_unlocked', JSON.stringify([]));
+    localStorage.removeItem('wildmaps_onboarded');
     
     setShowSettings(false);
+    setShowOnboarding(true);
     setCurrentView('map');
+  };
+
+  const completeOnboarding = () => {
+    setShowOnboarding(false);
+    localStorage.setItem('wildmaps_onboarded', 'true');
   };
 
   return (
@@ -97,7 +98,7 @@ export default function App() {
         <h1 className="text-2xl font-bold uppercase tracking-tighter">WildMaps</h1>
         <div className="flex items-center gap-3">
           <div className="font-mono text-sm bg-gold text-ink px-2 py-1 border-2 border-ink font-bold whitespace-nowrap shrink-0">
-            {unlockedLandmarks.length}/4 FOUND
+            {unlockedLandmarks.length}/3 FOUND
           </div>
           <button 
             onClick={() => setShowSettings(true)}
@@ -128,42 +129,49 @@ export default function App() {
             unlockedLandmarks={unlockedLandmarks}
             playerName={playerName}
             setPlayerName={setPlayerName}
-            startTime={startTime}
           />
         )}
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="bg-gold border-t-4 border-ink flex justify-around p-3 z-10">
+      <nav className="bg-gold border-t-4 border-ink flex p-3 z-10">
         <button 
           onClick={() => setCurrentView('map')}
-          className={`flex flex-col items-center p-2 rounded-none border-2 border-transparent ${currentView === 'map' ? 'border-ink bg-white shadow-[2px_2px_0px_0px_var(--color-ink)]' : 'hover:bg-white/50'}`}
+          className={`flex-1 flex flex-col items-center p-2 rounded-none border-2 border-transparent ${currentView === 'map' ? 'border-ink bg-white shadow-[2px_2px_0px_0px_var(--color-ink)]' : 'hover:bg-white/50'}`}
         >
           <Map size={24} className="mb-1" />
           <span className="text-xs font-bold uppercase">Map</span>
         </button>
         <button 
           onClick={() => setCurrentView('scan')}
-          className={`flex flex-col items-center p-2 rounded-none border-2 border-transparent ${currentView === 'scan' ? 'border-ink bg-white shadow-[2px_2px_0px_0px_var(--color-ink)]' : 'hover:bg-white/50'}`}
+          className={`flex-1 flex flex-col items-center p-2 rounded-none border-2 border-transparent ${currentView === 'scan' ? 'border-ink bg-white shadow-[2px_2px_0px_0px_var(--color-ink)]' : 'hover:bg-white/50'}`}
         >
           <Camera size={24} className="mb-1" />
           <span className="text-xs font-bold uppercase">Scan</span>
         </button>
         <button 
           onClick={() => setCurrentView('profile')}
-          className={`flex flex-col items-center p-2 rounded-none border-2 border-transparent ${currentView === 'profile' ? 'border-ink bg-white shadow-[2px_2px_0px_0px_var(--color-ink)]' : 'hover:bg-white/50'}`}
+          className={`flex-1 flex flex-col items-center p-2 rounded-none border-2 border-transparent ${currentView === 'profile' ? 'border-ink bg-white shadow-[2px_2px_0px_0px_var(--color-ink)]' : 'hover:bg-white/50'}`}
         >
           <UserCircle size={24} className="mb-1" />
           <span className="text-xs font-bold uppercase">Profile</span>
         </button>
       </nav>
 
-      {/* Settings Modal */}
+      {/* Modals */}
       {showSettings && (
         <SettingsModal 
           onClose={() => setShowSettings(false)} 
-          onReset={handleReset} 
+          onReset={handleReset}
+          onShowTutorial={() => {
+            setShowSettings(false);
+            setShowOnboarding(true);
+          }}
         />
+      )}
+
+      {showOnboarding && (
+        <OnboardingModal onComplete={completeOnboarding} />
       )}
     </div>
   );

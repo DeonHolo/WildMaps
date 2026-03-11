@@ -1,11 +1,12 @@
-import { X, ShieldAlert, RotateCcw, Phone, Info } from 'lucide-react';
+import { X, ShieldAlert, RotateCcw, Phone, Info, HelpCircle } from 'lucide-react';
 
 interface SettingsModalProps {
   onClose: () => void;
   onReset: () => void;
+  onShowTutorial: () => void;
 }
 
-export default function SettingsModal({ onClose, onReset }: SettingsModalProps) {
+export default function SettingsModal({ onClose, onReset, onShowTutorial }: SettingsModalProps) {
   return (
     <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-200">
       <div className="neo-brutalist-card bg-bg w-full max-w-sm flex flex-col relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
@@ -21,6 +22,23 @@ export default function SettingsModal({ onClose, onReset }: SettingsModalProps) 
         </div>
 
         <div className="p-5 flex flex-col gap-6">
+          {/* Tutorial Section */}
+          <section>
+            <h4 className="font-bold uppercase text-maroon flex items-center gap-2 mb-2 border-b-2 border-ink pb-1">
+              <HelpCircle size={18} />
+              Orientation
+            </h4>
+            <p className="text-sm text-gray-700 mb-3">
+              Need a refresher on how to use WildMaps?
+            </p>
+            <button 
+              onClick={onShowTutorial}
+              className="w-full neo-brutalist bg-white hover:bg-gray-100 text-ink font-bold uppercase py-3 flex items-center justify-center gap-2 transition-colors"
+            >
+              Replay Tutorial
+            </button>
+          </section>
+
           {/* Privacy Section */}
           <section>
             <h4 className="font-bold uppercase text-maroon flex items-center gap-2 mb-2 border-b-2 border-ink pb-1">
@@ -31,19 +49,6 @@ export default function SettingsModal({ onClose, onReset }: SettingsModalProps) 
               WildMaps processes all camera data <strong>locally on your device</strong> using TensorFlow.js. 
               No images or personal data are ever sent to or stored on a server. Your anonymity is guaranteed.
             </p>
-          </section>
-
-          {/* Emergency Section */}
-          <section>
-            <h4 className="font-bold uppercase text-maroon flex items-center gap-2 mb-2 border-b-2 border-ink pb-1">
-              <Phone size={18} />
-              Need Help?
-            </h4>
-            <div className="neo-brutalist bg-gold p-3 text-sm">
-              <p className="font-bold mb-1">Actually lost on campus?</p>
-              <p className="font-mono">CIT-U Security: (032) 261-7741</p>
-              <p className="font-mono">Student Affairs: Local 123</p>
-            </div>
           </section>
 
           {/* Danger Zone */}

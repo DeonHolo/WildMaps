@@ -1,47 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { LandmarkId, LANDMARKS } from '../types';
-import { Award, Lock, CheckCircle2, Trophy, User, Clock, Edit2, Check } from 'lucide-react';
+import { Award, Lock, CheckCircle2, Trophy, User, Edit2, Check, Star } from 'lucide-react';
 
 interface BadgesViewProps {
   unlockedLandmarks: LandmarkId[];
   playerName: string;
   setPlayerName: (name: string) => void;
-  startTime: number | null;
 }
 
-export default function BadgesView({ unlockedLandmarks, playerName, setPlayerName, startTime }: BadgesViewProps) {
+export default function BadgesView({ unlockedLandmarks, playerName, setPlayerName }: BadgesViewProps) {
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState(playerName);
-  const [elapsedTime, setElapsedTime] = useState<string>('00:00');
 
   const totalLandmarks = Object.keys(LANDMARKS).length;
   const unlockedCount = unlockedLandmarks.length;
   const progress = (unlockedCount / totalLandmarks) * 100;
   const isComplete = unlockedCount === totalLandmarks;
 
-  // Timer effect
-  useEffect(() => {
-    if (!startTime) return;
-
-    const updateTimer = () => {
-      // If complete, we could freeze the timer, but for simplicity we just show time since start
-      const now = Date.now();
-      const diff = Math.floor((now - startTime) / 1000); // in seconds
-      const minutes = Math.floor(diff / 60).toString().padStart(2, '0');
-      const seconds = (diff % 60).toString().padStart(2, '0');
-      setElapsedTime(`${minutes}:${seconds}`);
-    };
-
-    updateTimer();
-    const interval = setInterval(updateTimer, 1000);
-    
-    // If completed, stop updating to freeze the final time
-    if (isComplete) {
-      clearInterval(interval);
+  const getRank = (count: number) => {
+    switch (count) {
+      case 0: return 'Wildcat Cub';
+      case 1: return 'Campus Prowler';
+      case 2: return 'Fierce Hunter';
+      case 3: return 'Alpha Wildcat';
+      default: return 'Wildcat Cub';
     }
-
-    return () => clearInterval(interval);
-  }, [startTime, isComplete]);
+  };
 
   const handleSaveName = () => {
     if (tempName.trim()) {
@@ -99,12 +83,9 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
             )}
 
             <div className="flex items-center gap-4 mt-3">
-              <div className="flex items-center gap-1 text-sm font-mono bg-gray-100 px-2 py-1 border-2 border-ink">
-                <Clock size={14} />
-                {elapsedTime}
-              </div>
-              <div className="text-xs font-bold uppercase text-maroon">
-                {isComplete ? 'Master Rank' : 'Novice Rank'}
+              <div className="flex items-center gap-1 text-sm font-mono bg-maroon text-white px-2 py-1 border-2 border-ink font-bold uppercase">
+                <Star size={14} className="text-gold" />
+                Rank: {getRank(unlockedCount)}
               </div>
             </div>
           </div>
