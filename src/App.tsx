@@ -16,6 +16,7 @@ export default function App() {
   
   // Profile & Settings State
   const [playerName, setPlayerName] = useState<string>('');
+  const [avatarSeed, setAvatarSeed] = useState<string>('');
   const [showSettings, setShowSettings] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
@@ -48,6 +49,16 @@ export default function App() {
       setPlayerName(newName);
       localStorage.setItem('wildmaps_name', newName);
     }
+
+    // Load or Generate Avatar Seed
+    const savedAvatar = localStorage.getItem('wildmaps_avatar');
+    if (savedAvatar) {
+      setAvatarSeed(savedAvatar);
+    } else {
+      const newAvatar = `seed-${Math.floor(Math.random() * 100000)}`;
+      setAvatarSeed(newAvatar);
+      localStorage.setItem('wildmaps_avatar', newAvatar);
+    }
   }, []);
 
   // Save landmarks to local storage on change
@@ -61,6 +72,13 @@ export default function App() {
       localStorage.setItem('wildmaps_name', playerName);
     }
   }, [playerName]);
+
+  // Save avatar to local storage on change
+  useEffect(() => {
+    if (avatarSeed) {
+      localStorage.setItem('wildmaps_avatar', avatarSeed);
+    }
+  }, [avatarSeed]);
 
   const handleUnlock = (id: LandmarkId) => {
     setUnlockedLandmarks(prev => {
@@ -79,10 +97,7 @@ export default function App() {
 
   const handleReset = () => {
     setUnlockedLandmarks([]);
-    const newName = `Wildcat-${Math.floor(Math.random() * 10000)}`;
-    setPlayerName(newName);
     
-    localStorage.setItem('wildmaps_name', newName);
     localStorage.setItem('wildmaps_unlocked', JSON.stringify([]));
     localStorage.removeItem('wildmaps_onboarded');
     
@@ -97,7 +112,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col max-w-md mx-auto bg-bg border-x-4 border-ink relative overflow-hidden">
+    <div className="min-h-screen flex flex-col max-w-md mx-auto border-x-4 border-ink relative overflow-hidden bg-bg bg-grid-pattern shadow-2xl">
       {/* Header */}
       <header className="bg-maroon text-bg p-4 border-b-4 border-ink flex justify-between items-center z-10">
         <h1 className="text-2xl font-bold uppercase tracking-tighter">WildMaps</h1>
@@ -115,7 +130,7 @@ export default function App() {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 relative overflow-hidden bg-bg">
+      <main className="flex-1 relative overflow-hidden">
         {currentView === 'map' && (
           <MapView 
             unlockedLandmarks={unlockedLandmarks} 
@@ -134,6 +149,8 @@ export default function App() {
             unlockedLandmarks={unlockedLandmarks}
             playerName={playerName}
             setPlayerName={setPlayerName}
+            avatarSeed={avatarSeed}
+            setAvatarSeed={setAvatarSeed}
           />
         )}
       </main>

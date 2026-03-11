@@ -111,7 +111,7 @@ export default function ScanView({ targetId, onUnlock, onCancel }: ScanViewProps
 
   if (!target) {
     return (
-      <div className="absolute inset-0 bg-bg p-6 flex flex-col items-center justify-center">
+      <div className="absolute inset-0 p-6 flex flex-col items-center justify-center">
         <div className="neo-brutalist-card bg-white p-6 text-center max-w-sm">
           <AlertCircle size={48} className="mx-auto mb-4 text-maroon" />
           <h2 className="text-xl font-bold uppercase mb-2">No Target Selected</h2>

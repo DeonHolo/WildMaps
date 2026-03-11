@@ -6,7 +6,7 @@
   --color-maroon-light: #A52A2A;
   --color-gold: #FFD700;
   --color-gold-dark: #DAA520;
-  --color-bg: #FFFDF5;
+  --color-bg: #eef4ff; /* Changed to a light blue to match the reference pic */
   --color-ink: #111111;
   
   --font-sans: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
@@ -14,9 +14,16 @@
 }
 
 body {
-  background-color: var(--color-bg);
+  background-color: #e5e7eb; /* Neutral gray for PC view */
   color: var(--color-ink);
   font-family: var(--font-sans);
+}
+
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(to right, rgba(17, 17, 17, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(17, 17, 17, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
 }
 
 .neo-brutalist {

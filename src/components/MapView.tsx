@@ -22,7 +22,7 @@ export default function MapView({ unlockedLandmarks, onSelectLandmark }: MapView
   };
 
   return (
-    <div className="absolute inset-0 bg-[#e5e5e5] p-4 flex flex-col">
+    <div className="absolute inset-0 p-4 flex flex-col">
       <div className="bg-white neo-brutalist-card p-4 mb-4 z-10">
         <h2 className="text-xl font-bold uppercase mb-1">Campus Map</h2>
         <p className="text-sm text-gray-600">Explore the campus and find the hidden landmarks to clear the fog of war.</p>
@@ -45,6 +45,10 @@ export default function MapView({ unlockedLandmarks, onSelectLandmark }: MapView
         <div className="absolute inset-0 pointer-events-none z-10">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
             <defs>
+              <filter id="fog-noise" x="-20%" y="-20%" width="140%" height="140%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="4" result="noise" />
+                <feColorMatrix type="matrix" values="0 0 0 0 0.8  0 0 0 0 0.8  0 0 0 0 0.8  1.5 0 0 0 -0.2" in="noise" />
+              </filter>
               <mask id="fog-mask">
                 <rect width="100%" height="100%" fill="white" />
                 {unlockedLandmarks.map(id => {
@@ -62,7 +66,10 @@ export default function MapView({ unlockedLandmarks, onSelectLandmark }: MapView
                 })}
               </mask>
             </defs>
-            <rect width="100%" height="100%" fill="rgba(17,17,17,0.85)" mask="url(#fog-mask)" />
+            <g mask="url(#fog-mask)">
+              <rect width="100%" height="100%" fill="rgba(17,17,17,0.9)" />
+              <rect width="100%" height="100%" fill="white" filter="url(#fog-noise)" opacity="0.5" />
+            </g>
           </svg>
         </div>
 
@@ -85,8 +92,8 @@ export default function MapView({ unlockedLandmarks, onSelectLandmark }: MapView
                 {isUnlocked ? <Unlock size={20} /> : <Lock size={20} />}
               </div>
               <div className={`
-                mt-2 px-2 py-1 text-xs font-bold uppercase neo-brutalist text-center max-w-[140px]
-                ${isUnlocked ? 'bg-white text-ink' : 'bg-gray-800 text-white'}
+                mt-2 px-2 py-1 text-xs font-bold uppercase neo-brutalist text-center
+                ${isUnlocked ? 'bg-white text-ink max-w-[140px]' : 'bg-gray-800 text-white whitespace-nowrap'}
               `}>
                 {isUnlocked ? lm.name : 'Unknown Sector'}
               </div>

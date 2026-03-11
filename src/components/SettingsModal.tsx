@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { X, ShieldAlert, RotateCcw, Phone, Info, HelpCircle } from 'lucide-react';
 
 interface SettingsModalProps {
@@ -7,6 +8,8 @@ interface SettingsModalProps {
 }
 
 export default function SettingsModal({ onClose, onReset, onShowTutorial }: SettingsModalProps) {
+  const [confirmReset, setConfirmReset] = useState(false);
+
   return (
     <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-200">
       <div className="neo-brutalist-card bg-bg w-full max-w-sm flex flex-col relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
@@ -58,18 +61,31 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
               Danger Zone
             </h4>
             <p className="text-xs text-gray-600 mb-3">
-              Resetting will clear your current progress, badges, and generated ID. This cannot be undone.
+              Resetting will clear your current progress and badges. Your Explorer ID will remain intact. This cannot be undone.
             </p>
-            <button 
-              onClick={() => {
-                if (window.confirm("Are you sure you want to reset all progress?")) {
-                  onReset();
-                }
-              }}
-              className="w-full neo-brutalist bg-red-500 hover:bg-red-600 text-white font-bold uppercase py-3 transition-colors"
-            >
-              Reset Progress
-            </button>
+            {!confirmReset ? (
+              <button 
+                onClick={() => setConfirmReset(true)}
+                className="w-full neo-brutalist bg-red-500 hover:bg-red-600 text-white font-bold uppercase py-3 transition-colors"
+              >
+                Reset Progress
+              </button>
+            ) : (
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setConfirmReset(false)}
+                  className="flex-1 neo-brutalist bg-gray-200 hover:bg-gray-300 text-ink font-bold uppercase py-3 transition-colors text-sm"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={onReset}
+                  className="flex-1 neo-brutalist bg-red-600 hover:bg-red-700 text-white font-bold uppercase py-3 transition-colors text-sm"
+                >
+                  Confirm Reset
+                </button>
+              </div>
+            )}
           </section>
         </div>
       </div>
