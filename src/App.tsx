@@ -170,7 +170,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col max-w-md mx-auto border-x-4 border-ink relative overflow-hidden bg-bg bg-grid-pattern shadow-2xl">
+    <div className="h-[100dvh] flex flex-col max-w-md mx-auto border-x-4 border-ink relative overflow-hidden bg-bg bg-grid-pattern shadow-2xl">
       {/* Header */}
       <header className="bg-maroon text-bg p-4 border-b-4 border-ink flex justify-between items-center z-10">
         <h1 className="text-2xl font-bold uppercase tracking-tighter">WildMaps</h1>
@@ -198,8 +198,8 @@ export default function App() {
             animate="center"
             exit="exit"
             transition={{
-              x: { type: 'spring', stiffness: 300, damping: 30 },
-              opacity: { duration: 0.2 },
+              x: { type: 'spring', stiffness: 600, damping: 35 },
+              opacity: { duration: 0.15 },
             }}
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}

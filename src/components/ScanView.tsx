@@ -130,7 +130,7 @@ export default function ScanView({ targetId, onUnlock, onCancel }: ScanViewProps
   return (
     <div className="absolute inset-0 bg-ink flex flex-col">
       {/* Header */}
-      <div className="bg-maroon text-white p-4 flex justify-between items-center z-10 border-b-4 border-ink">
+      <div className="bg-gold text-ink p-4 flex justify-between items-center z-10 border-b-4 border-ink">
         <div>
           <h2 className="text-sm font-mono uppercase opacity-80">Current Target</h2>
           <p className="font-bold text-lg">{target.name}</p>

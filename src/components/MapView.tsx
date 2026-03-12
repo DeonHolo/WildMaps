@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { LandmarkId, LANDMARKS } from '../types';
 import { MapPin, Lock, Unlock, X, Camera } from 'lucide-react';
 
@@ -37,87 +38,98 @@ export default function MapView({ unlockedLandmarks, justUnlocked, onSelectLandm
       </div>
 
       <div className="flex-1 relative neo-brutalist-card bg-[#d1d5db] overflow-hidden">
-        {/* Placeholder Map Background */}
-        <div className="absolute inset-0 opacity-20" style={{
-          backgroundImage: 'radial-gradient(#111 2px, transparent 2px)',
-          backgroundSize: '20px 20px'
-        }}></div>
+        <TransformWrapper
+          minScale={0.5}
+          maxScale={4}
+          initialScale={1}
+          centerOnInit={true}
+          wheel={{ step: 0.1 }}
+          doubleClick={{ step: 0.5 }}
+        >
+          <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }} contentStyle={{ width: "100%", height: "100%", position: "relative" }}>
+            {/* Placeholder Map Background */}
+            <div className="absolute inset-0 opacity-20" style={{
+              backgroundImage: 'radial-gradient(#111 2px, transparent 2px)',
+              backgroundSize: '20px 20px'
+            }}></div>
 
-        {/* Simulated Paths */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-30" preserveAspectRatio="none">
-          <path d="M 20% 30% L 70% 20% L 80% 70% L 30% 80% Z" fill="none" stroke="black" strokeWidth="4" strokeDasharray="8 8" />
-          <path d="M 20% 30% L 80% 70%" fill="none" stroke="black" strokeWidth="4" strokeDasharray="8 8" />
-        </svg>
+            {/* Simulated Paths */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-30" preserveAspectRatio="none">
+              <path d="M 20% 30% L 70% 20% L 80% 70% L 30% 80% Z" fill="none" stroke="black" strokeWidth="4" strokeDasharray="8 8" />
+              <path d="M 20% 30% L 80% 70%" fill="none" stroke="black" strokeWidth="4" strokeDasharray="8 8" />
+            </svg>
 
-        {/* Fog of War Overlay */}
-        <AnimatePresence>
-          {unlockedLandmarks.length < 3 && (
-            <motion.div 
-              className="absolute inset-0 pointer-events-none z-10"
-              exit={{ opacity: 0 }}
-              transition={{ duration: 2 }}
-            >
-              <svg width="100%" height="100%" viewBox="0 0 1000 1000" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <filter id="fog-noise" x="-20%" y="-20%" width="140%" height="140%">
-                    <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="4" result="noise" />
-                    <feColorMatrix type="matrix" values="0 0 0 0 0.8  0 0 0 0 0.8  0 0 0 0 0.8  1.5 0 0 0 -0.2" in="noise" />
-                  </filter>
-                  <mask id="fog-mask">
-                    <rect width="100%" height="100%" fill="white" />
-                    {unlockedLandmarks.map(id => (
-                      <motion.path 
-                        key={id} 
-                        d={SECTOR_PATHS[id]} 
-                        initial={id === justUnlocked ? { opacity: 0 } : false}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 2, ease: "easeOut" }}
-                        fill="black" 
-                        stroke="black"
-                        strokeWidth="150"
-                        strokeLinejoin="round"
-                        strokeLinecap="round"
-                        filter="blur(40px)"
-                      />
-                    ))}
-                  </mask>
-                </defs>
-                <g mask="url(#fog-mask)">
-                  <rect width="100%" height="100%" fill="rgba(17,17,17,0.9)" />
-                  <rect width="100%" height="100%" fill="white" filter="url(#fog-noise)" opacity="0.5" />
-                </g>
-              </svg>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            {/* Fog of War Overlay */}
+            <AnimatePresence>
+              {unlockedLandmarks.length < 3 && (
+                <motion.div 
+                  className="absolute inset-0 pointer-events-none z-10"
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 2 }}
+                >
+                  <svg width="100%" height="100%" viewBox="0 0 1000 1000" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <filter id="fog-noise" x="-20%" y="-20%" width="140%" height="140%">
+                        <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="4" result="noise" />
+                        <feColorMatrix type="matrix" values="0 0 0 0 0.8  0 0 0 0 0.8  0 0 0 0 0.8  1.5 0 0 0 -0.2" in="noise" />
+                      </filter>
+                      <mask id="fog-mask">
+                        <rect width="100%" height="100%" fill="white" />
+                        {unlockedLandmarks.map(id => (
+                          <motion.path 
+                            key={id} 
+                            d={SECTOR_PATHS[id]} 
+                            initial={id === justUnlocked ? { opacity: 0 } : false}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 2, ease: "easeOut" }}
+                            fill="black" 
+                            stroke="black"
+                            strokeWidth="150"
+                            strokeLinejoin="round"
+                            strokeLinecap="round"
+                            filter="blur(40px)"
+                          />
+                        ))}
+                      </mask>
+                    </defs>
+                    <g mask="url(#fog-mask)">
+                      <rect width="100%" height="100%" fill="rgba(17,17,17,0.9)" />
+                      <rect width="100%" height="100%" fill="white" filter="url(#fog-noise)" opacity="0.5" />
+                    </g>
+                  </svg>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-        {/* Landmarks */}
-        {Object.values(LANDMARKS).map(lm => {
-          const isUnlocked = unlockedLandmarks.includes(lm.id);
-          
-          return (
-            <button
-              key={lm.id}
-              onClick={() => handleNodeClick(lm.id)}
-              className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20 group"
-              style={{ left: `${lm.x}%`, top: `${lm.y}%` }}
-            >
-              <div className={`
-                w-12 h-12 rounded-full flex items-center justify-center neo-brutalist
-                ${isUnlocked ? 'bg-gold text-ink' : 'bg-gray-800 text-white'}
-                group-hover:scale-110 transition-transform
-              `}>
-                {isUnlocked ? <Unlock size={20} /> : <Lock size={20} />}
-              </div>
-              <div className={`
-                mt-2 px-2 py-1 text-xs font-bold uppercase neo-brutalist text-center
-                ${isUnlocked ? 'bg-white text-ink max-w-[140px]' : 'bg-gray-800 text-white whitespace-nowrap'}
-              `}>
-                {isUnlocked ? lm.name : 'Unknown Sector'}
-              </div>
-            </button>
-          );
-        })}
+            {/* Landmarks */}
+            {Object.values(LANDMARKS).map(lm => {
+              const isUnlocked = unlockedLandmarks.includes(lm.id);
+              
+              return (
+                <button
+                  key={lm.id}
+                  onClick={() => handleNodeClick(lm.id)}
+                  className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20 group"
+                  style={{ left: `${lm.x}%`, top: `${lm.y}%` }}
+                >
+                  <div className={`
+                    w-12 h-12 rounded-full flex items-center justify-center neo-brutalist
+                    ${isUnlocked ? 'bg-gold text-ink' : 'bg-gray-800 text-white'}
+                    group-hover:scale-110 transition-transform
+                  `}>
+                    {isUnlocked ? <Unlock size={20} /> : <Lock size={20} />}
+                  </div>
+                  <div className={`
+                    mt-2 px-2 py-1 text-xs font-bold uppercase neo-brutalist text-center
+                    ${isUnlocked ? 'bg-white text-ink max-w-[140px]' : 'bg-gray-800 text-white whitespace-nowrap'}
+                  `}>
+                    {isUnlocked ? lm.name : 'Unknown Sector'}
+                  </div>
+                </button>
+              );
+            })}
+          </TransformComponent>
+        </TransformWrapper>
       </div>
 
       {/* Hint Modal */}

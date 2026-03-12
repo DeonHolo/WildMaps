@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, ShieldAlert, RotateCcw, Phone, Info, HelpCircle } from 'lucide-react';
+import { X, ShieldAlert, RotateCcw, Phone, Info, HelpCircle, Share2 } from 'lucide-react';
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -9,6 +9,24 @@ interface SettingsModalProps {
 
 export default function SettingsModal({ onClose, onReset, onShowTutorial }: SettingsModalProps) {
   const [confirmReset, setConfirmReset] = useState(false);
+
+  const handleShare = async () => {
+    const shareData = {
+      title: 'WildMaps',
+      text: `I'm exploring the campus in WildMaps! Can you find all the landmarks? Play here:`,
+      url: 'https://wildmaps.vercel.app/',
+    };
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    } else {
+      navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+      alert('Link copied to clipboard!');
+    }
+  };
 
   return (
     <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-200">
@@ -39,6 +57,24 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
               className="w-full neo-brutalist bg-white hover:bg-gray-100 text-ink font-bold uppercase py-3 flex items-center justify-center gap-2 transition-colors"
             >
               Replay Tutorial
+            </button>
+          </section>
+
+          {/* Share Section */}
+          <section>
+            <h4 className="font-bold uppercase text-maroon flex items-center gap-2 mb-2 border-b-2 border-ink pb-1">
+              <Share2 size={18} />
+              Share with Friends
+            </h4>
+            <p className="text-sm text-gray-700 mb-3">
+              Challenge your friends to find all the landmarks!
+            </p>
+            <button 
+              onClick={handleShare}
+              className="w-full neo-brutalist bg-gold hover:bg-gold-dark text-ink font-bold uppercase py-3 flex items-center justify-center gap-2 transition-colors"
+            >
+              <Share2 size={20} />
+              Share WildMaps
             </button>
           </section>
 
