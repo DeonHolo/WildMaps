@@ -141,17 +141,6 @@ export default function App() {
   const views: View[] = ['map', 'scan', 'profile'];
   const currentIndex = views.indexOf(currentView);
 
-  const handleDragEnd = (e: any, { offset, velocity }: any) => {
-    const swipe = Math.abs(offset.x) * velocity.x;
-    const swipeConfidenceThreshold = 10000;
-
-    if (swipe < -swipeConfidenceThreshold) {
-      if (currentIndex < views.length - 1) changeView(views[currentIndex + 1]);
-    } else if (swipe > swipeConfidenceThreshold) {
-      if (currentIndex > 0) changeView(views[currentIndex - 1]);
-    }
-  };
-
   const variants = {
     enter: (direction: number) => ({
       x: direction > 0 ? '100%' : '-100%',
@@ -201,13 +190,6 @@ export default function App() {
               x: { type: 'spring', stiffness: 600, damping: 35 },
               opacity: { duration: 0.15 },
             }}
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={{
-              left: currentView === 'profile' ? 0 : 1,
-              right: currentView === 'map' ? 0 : 1,
-            }}
-            onDragEnd={handleDragEnd}
             className="absolute inset-0 w-full h-full"
           >
             {currentView === 'map' && (

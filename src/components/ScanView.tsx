@@ -141,10 +141,7 @@ export default function ScanView({ targetId, onUnlock, onCancel }: ScanViewProps
       </div>
 
       {/* Camera View */}
-      <div 
-        className="flex-1 relative overflow-hidden bg-black flex items-center justify-center"
-        onPointerDown={(e) => e.stopPropagation()}
-      >
+      <div className="flex-1 relative overflow-hidden bg-black flex items-center justify-center">
         <video 
           ref={videoRef} 
           autoPlay 
