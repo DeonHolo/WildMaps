@@ -37,7 +37,10 @@ export default function MapView({ unlockedLandmarks, justUnlocked, onSelectLandm
         <p className="text-sm text-gray-600">Explore the campus and find the hidden landmarks to clear the fog of war.</p>
       </div>
 
-      <div className="flex-1 relative neo-brutalist-card bg-[#d1d5db] overflow-hidden">
+      <div 
+        className="flex-1 relative neo-brutalist-card bg-[#d1d5db] overflow-hidden"
+        onPointerDown={(e) => e.stopPropagation()}
+      >
         <TransformWrapper
           minScale={0.5}
           maxScale={4}

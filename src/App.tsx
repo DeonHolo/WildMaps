@@ -203,7 +203,10 @@ export default function App() {
             }}
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={1}
+            dragElastic={{
+              left: currentView === 'profile' ? 0 : 1,
+              right: currentView === 'map' ? 0 : 1,
+            }}
             onDragEnd={handleDragEnd}
             className="absolute inset-0 w-full h-full"
           >

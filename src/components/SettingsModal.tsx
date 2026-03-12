@@ -13,7 +13,7 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
   const handleShare = async () => {
     const shareData = {
       title: 'WildMaps',
-      text: `I'm exploring the campus in WildMaps! Can you find all the landmarks? Play here:`,
+      text: `I'm exploring the CIT-U campus in WildMaps! Can you find all the landmarks? Play here:`,
       url: 'https://wildmaps.vercel.app/',
     };
     if (navigator.share) {
