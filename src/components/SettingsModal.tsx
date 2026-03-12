@@ -1,5 +1,12 @@
 import { useState } from 'react';
-import { X, ShieldAlert, RotateCcw, Phone, Info, HelpCircle, Share2 } from 'lucide-react';
+import { X, ShieldAlert, RotateCcw, Phone, Info, HelpCircle, Share2, Copy, Check } from 'lucide-react';
+import {
+  FacebookShareButton, FacebookIcon,
+  TwitterShareButton, TwitterIcon,
+  WhatsappShareButton, WhatsappIcon,
+  TelegramShareButton, TelegramIcon,
+  RedditShareButton, RedditIcon
+} from 'react-share';
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -9,23 +16,32 @@ interface SettingsModalProps {
 
 export default function SettingsModal({ onClose, onReset, onShowTutorial }: SettingsModalProps) {
   const [confirmReset, setConfirmReset] = useState(false);
+  const [showShareOptions, setShowShareOptions] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  const handleShare = async () => {
-    const shareData = {
-      title: 'WildMaps',
-      text: `I'm exploring the CIT-U campus in WildMaps! Can you find all the landmarks? Play here:`,
-      url: 'https://wildmaps.vercel.app/',
-    };
+  const shareData = {
+    title: 'WildMaps',
+    text: `I'm exploring the CIT-U campus in WildMaps! Can you find all the landmarks? Play here:`,
+    url: 'https://wildmaps.vercel.app/',
+  };
+
+  const handleNativeShare = async () => {
     if (navigator.share) {
       try {
         await navigator.share(shareData);
       } catch (err) {
         console.error('Error sharing:', err);
+        setShowShareOptions(true);
       }
     } else {
-      navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
-      alert('Link copied to clipboard!');
+      setShowShareOptions(true);
     }
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -69,13 +85,49 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
             <p className="text-sm text-gray-700 mb-3">
               Challenge your friends to find all the landmarks!
             </p>
-            <button 
-              onClick={handleShare}
-              className="w-full neo-brutalist bg-gold hover:bg-gold-dark text-ink font-bold uppercase py-3 flex items-center justify-center gap-2 transition-colors"
-            >
-              <Share2 size={20} />
-              Share WildMaps
-            </button>
+            
+            {!showShareOptions ? (
+              <button 
+                onClick={handleNativeShare}
+                className="w-full neo-brutalist bg-gold hover:bg-gold-dark text-ink font-bold uppercase py-3 flex items-center justify-center gap-2 transition-colors"
+              >
+                <Share2 size={20} />
+                Share WildMaps
+              </button>
+            ) : (
+              <div className="bg-white border-2 border-ink p-3 flex flex-col gap-3">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-sm uppercase">Share via...</span>
+                  <button onClick={() => setShowShareOptions(false)} className="text-gray-500 hover:text-ink">
+                    <X size={16} />
+                  </button>
+                </div>
+                <div className="flex gap-3 justify-center flex-wrap">
+                  <FacebookShareButton url={shareData.url} title={shareData.title}>
+                    <FacebookIcon size={40} round className="border-2 border-ink hover:scale-105 transition-transform" />
+                  </FacebookShareButton>
+                  <TwitterShareButton url={shareData.url} title={shareData.text}>
+                    <TwitterIcon size={40} round className="border-2 border-ink hover:scale-105 transition-transform" />
+                  </TwitterShareButton>
+                  <WhatsappShareButton url={shareData.url} title={shareData.text} separator=" - ">
+                    <WhatsappIcon size={40} round className="border-2 border-ink hover:scale-105 transition-transform" />
+                  </WhatsappShareButton>
+                  <TelegramShareButton url={shareData.url} title={shareData.text}>
+                    <TelegramIcon size={40} round className="border-2 border-ink hover:scale-105 transition-transform" />
+                  </TelegramShareButton>
+                  <RedditShareButton url={shareData.url} title={shareData.text}>
+                    <RedditIcon size={40} round className="border-2 border-ink hover:scale-105 transition-transform" />
+                  </RedditShareButton>
+                </div>
+                <button 
+                  onClick={handleCopy}
+                  className={`w-full neo-brutalist font-bold uppercase py-2 flex items-center justify-center gap-2 transition-colors text-sm ${copied ? 'bg-green-400 text-ink' : 'bg-gray-200 hover:bg-gray-300 text-ink'}`}
+                >
+                  {copied ? <Check size={16} /> : <Copy size={16} />}
+                  {copied ? 'Copied!' : 'Copy Link'}
+                </button>
+              </div>
+            )}
           </section>
 
           {/* Privacy Section */}

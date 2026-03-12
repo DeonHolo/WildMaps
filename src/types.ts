@@ -24,7 +24,7 @@ export const LANDMARKS: Record<LandmarkId, Landmark> = {
   },
   library: {
     id: 'library',
-    name: 'Learning Resource and Activity Center (LRAC)',
+    name: 'College Library',
     description: 'The main hub for research, studying, and academic resources.',
     hint: "Look for the building with the vast collection of books and study areas!",
     imageUrl: 'https://picsum.photos/seed/library/400/200',

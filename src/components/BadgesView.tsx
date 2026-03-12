@@ -105,9 +105,9 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
                 </div>
               )}
 
-              <div className="flex items-center gap-4 mt-3">
-                <div className="flex items-center gap-1 text-sm font-mono bg-maroon text-white px-2 py-1 border-2 border-ink font-bold uppercase">
-                  <Star size={14} className="text-gold" />
+              <div className="mt-3">
+                <div className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-mono bg-maroon text-white px-2 py-1 border-2 border-ink font-bold uppercase whitespace-nowrap">
+                  <Star size={14} className="text-gold shrink-0" />
                   Rank: {getRank(unlockedCount)}
                 </div>
               </div>
