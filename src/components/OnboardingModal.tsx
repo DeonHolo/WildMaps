@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { ONBOARDING_STEPS } from '../onboardingSteps';
 import { X, ChevronRight, ChevronLeft } from 'lucide-react';
 
@@ -49,22 +50,37 @@ export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
 
         {/* Content */}
         <div className="p-6 pt-12 flex flex-col items-center text-center">
-          <div className="w-full aspect-video neo-brutalist bg-white mb-6 overflow-hidden">
-            <img 
-              src={step.image} 
-              alt={step.title} 
-              className="w-full h-full object-cover"
-              referrerPolicy="no-referrer"
-            />
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div 
+              key={currentStep}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.2 }}
+              className="w-full flex flex-col items-center"
+            >
+              <motion.div 
+                className="w-full aspect-video neo-brutalist bg-white mb-6 overflow-hidden"
+                animate={currentStep === 0 ? { y: [0, -6, 0] } : {}}
+                transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+              >
+                <img 
+                  src={step.image} 
+                  alt={step.title} 
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              </motion.div>
 
-          <h2 className="text-2xl font-bold uppercase mb-3 tracking-tighter leading-none">
-            {step.title}
-          </h2>
-          
-          <p className="text-sm text-gray-600 font-medium leading-relaxed mb-8 min-h-[4.5rem]">
-            {step.description}
-          </p>
+              <h2 className="text-2xl font-bold uppercase mb-3 tracking-tighter leading-none">
+                {step.title}
+              </h2>
+              
+              <p className="text-sm text-gray-600 font-medium leading-relaxed mb-8 min-h-[4.5rem]">
+                {step.description}
+              </p>
+            </motion.div>
+          </AnimatePresence>
 
           <div className="w-full flex gap-3">
             {currentStep > 0 && (

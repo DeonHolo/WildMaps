@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Map, Camera, UserCircle, Settings } from 'lucide-react';
-import { LandmarkId } from './types';
+import { motion, AnimatePresence } from 'motion/react';
+import Confetti from 'react-confetti';
+import { useWindowSize } from 'react-use';
+import { LandmarkId, LANDMARKS } from './types';
 import MapView from './components/MapView';
 import ScanView from './components/ScanView';
 import BadgesView from './components/BadgesView';
@@ -11,8 +14,13 @@ type View = 'map' | 'scan' | 'profile';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<View>('map');
+  const [direction, setDirection] = useState(0);
   const [unlockedLandmarks, setUnlockedLandmarks] = useState<LandmarkId[]>([]);
   const [targetLandmark, setTargetLandmark] = useState<LandmarkId | null>(null);
+  const [justUnlocked, setJustUnlocked] = useState<LandmarkId | null>(null);
+  const [showAchievementModal, setShowAchievementModal] = useState<LandmarkId | null>(null);
+  const [showAllUnlockedModal, setShowAllUnlockedModal] = useState(false);
+  const { width, height } = useWindowSize();
   
   // Profile & Settings State
   const [playerName, setPlayerName] = useState<string>('');
@@ -82,6 +90,14 @@ export default function App() {
     }
   }, [avatarSeed]);
 
+  const changeView = (newView: View) => {
+    const views: View[] = ['map', 'scan', 'profile'];
+    const currentIndex = views.indexOf(currentView);
+    const newIndex = views.indexOf(newView);
+    setDirection(newIndex > currentIndex ? 1 : -1);
+    setCurrentView(newView);
+  };
+
   const handleUnlock = (id: LandmarkId) => {
     setUnlockedLandmarks(prev => {
       if (!prev.includes(id)) {
@@ -89,12 +105,21 @@ export default function App() {
       }
       return prev;
     });
-    setCurrentView('profile');
+    setJustUnlocked(id);
+    setShowAchievementModal(id);
+    changeView('map');
+  };
+
+  const closeAchievementModal = () => {
+    setShowAchievementModal(null);
+    if (unlockedLandmarks.length === 3) {
+      setTimeout(() => setShowAllUnlockedModal(true), 500);
+    }
   };
 
   const startScan = (id: LandmarkId) => {
     setTargetLandmark(id);
-    setCurrentView('scan');
+    changeView('scan');
   };
 
   const handleReset = () => {
@@ -105,12 +130,43 @@ export default function App() {
     
     setShowSettings(false);
     setShowOnboarding(true);
-    setCurrentView('map');
+    changeView('map');
   };
 
   const completeOnboarding = () => {
     setShowOnboarding(false);
     localStorage.setItem('wildmaps_onboarded', 'true');
+  };
+
+  const views: View[] = ['map', 'scan', 'profile'];
+  const currentIndex = views.indexOf(currentView);
+
+  const handleDragEnd = (e: any, { offset, velocity }: any) => {
+    const swipe = Math.abs(offset.x) * velocity.x;
+    const swipeConfidenceThreshold = 10000;
+
+    if (swipe < -swipeConfidenceThreshold) {
+      if (currentIndex < views.length - 1) changeView(views[currentIndex + 1]);
+    } else if (swipe > swipeConfidenceThreshold) {
+      if (currentIndex > 0) changeView(views[currentIndex - 1]);
+    }
+  };
+
+  const variants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? '100%' : '-100%',
+      opacity: 0,
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: direction < 0 ? '100%' : '-100%',
+      opacity: 0,
+    }),
   };
 
   return (
@@ -133,56 +189,140 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 relative overflow-hidden">
-        {currentView === 'map' && (
-          <MapView 
-            unlockedLandmarks={unlockedLandmarks} 
-            onSelectLandmark={startScan} 
-          />
-        )}
-        {currentView === 'scan' && (
-          <ScanView 
-            targetId={targetLandmark} 
-            onUnlock={handleUnlock} 
-            onCancel={() => setCurrentView('map')} 
-          />
-        )}
-        {currentView === 'profile' && (
-          <BadgesView 
-            unlockedLandmarks={unlockedLandmarks}
-            playerName={playerName}
-            setPlayerName={setPlayerName}
-            avatarSeed={avatarSeed}
-            setAvatarSeed={setAvatarSeed}
-          />
-        )}
+        <AnimatePresence initial={false} custom={direction}>
+          <motion.div
+            key={currentView}
+            custom={direction}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{
+              x: { type: 'spring', stiffness: 300, damping: 30 },
+              opacity: { duration: 0.2 },
+            }}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={1}
+            onDragEnd={handleDragEnd}
+            className="absolute inset-0 w-full h-full"
+          >
+            {currentView === 'map' && (
+              <MapView 
+                unlockedLandmarks={unlockedLandmarks} 
+                justUnlocked={justUnlocked}
+                onSelectLandmark={startScan} 
+              />
+            )}
+            {currentView === 'scan' && (
+              <ScanView 
+                targetId={targetLandmark} 
+                onUnlock={handleUnlock} 
+                onCancel={() => changeView('map')} 
+              />
+            )}
+            {currentView === 'profile' && (
+              <BadgesView 
+                unlockedLandmarks={unlockedLandmarks}
+                playerName={playerName}
+                setPlayerName={setPlayerName}
+                avatarSeed={avatarSeed}
+                setAvatarSeed={setAvatarSeed}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* Bottom Navigation */}
       <nav className="bg-gold border-t-4 border-ink flex p-3 z-10">
-        <button 
-          onClick={() => setCurrentView('map')}
+        <motion.button 
+          whileTap={{ scale: 0.95 }}
+          onClick={() => changeView('map')}
           className={`flex-1 flex flex-col items-center p-2 rounded-none border-2 border-transparent ${currentView === 'map' ? 'border-ink bg-white shadow-[2px_2px_0px_0px_var(--color-ink)]' : 'hover:bg-white/50'}`}
         >
           <Map size={24} className="mb-1" />
           <span className="text-xs font-bold uppercase">Map</span>
-        </button>
-        <button 
-          onClick={() => setCurrentView('scan')}
+        </motion.button>
+        <motion.button 
+          whileTap={{ scale: 0.95 }}
+          onClick={() => changeView('scan')}
           className={`flex-1 flex flex-col items-center p-2 rounded-none border-2 border-transparent ${currentView === 'scan' ? 'border-ink bg-white shadow-[2px_2px_0px_0px_var(--color-ink)]' : 'hover:bg-white/50'}`}
         >
           <Camera size={24} className="mb-1" />
           <span className="text-xs font-bold uppercase">Scan</span>
-        </button>
-        <button 
-          onClick={() => setCurrentView('profile')}
+        </motion.button>
+        <motion.button 
+          whileTap={{ scale: 0.95 }}
+          onClick={() => changeView('profile')}
           className={`flex-1 flex flex-col items-center p-2 rounded-none border-2 border-transparent ${currentView === 'profile' ? 'border-ink bg-white shadow-[2px_2px_0px_0px_var(--color-ink)]' : 'hover:bg-white/50'}`}
         >
           <UserCircle size={24} className="mb-1" />
           <span className="text-xs font-bold uppercase">Profile</span>
-        </button>
+        </motion.button>
       </nav>
 
       {/* Modals */}
+      {showAchievementModal && (
+        <div className="absolute inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 animate-in fade-in duration-300">
+          <Confetti 
+            width={width} 
+            height={height} 
+            recycle={false} 
+            numberOfPieces={500} 
+            gravity={0.8} 
+            initialVelocityY={40} 
+          />
+          <div className="neo-brutalist-card bg-bg w-full max-w-sm flex flex-col relative animate-in zoom-in-95 duration-300 text-center p-6">
+            <div className="mb-4">
+              <h2 className="inline-block text-3xl font-black uppercase text-ink bg-gold px-4 py-2 border-4 border-ink shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -rotate-2 transform">
+                Sector Unlocked!
+              </h2>
+            </div>
+            <p className="text-gray-800 font-bold mb-6 text-lg">You've successfully mapped {LANDMARKS[showAchievementModal].name}.</p>
+            <div className="w-full h-40 mx-auto mb-6 neo-brutalist bg-white flex items-center justify-center overflow-hidden">
+              <img src={LANDMARKS[showAchievementModal].imageUrl} alt="Unlocked" className="w-full h-full object-cover" />
+            </div>
+            <button 
+              onClick={closeAchievementModal}
+              className="w-full neo-brutalist bg-gold hover:bg-gold-dark text-ink font-bold uppercase py-3 transition-colors text-xl"
+            >
+              Awesome!
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showAllUnlockedModal && (
+        <div className="absolute inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 animate-in fade-in duration-300">
+          <Confetti 
+            width={width} 
+            height={height} 
+            recycle={true} 
+            numberOfPieces={200} 
+            gravity={0.5} 
+            initialVelocityY={30} 
+          />
+          <div className="neo-brutalist-card bg-bg w-full max-w-sm flex flex-col relative animate-in zoom-in-95 duration-300 text-center p-6">
+            <div className="mb-4">
+              <h2 className="inline-block text-3xl font-black uppercase text-ink bg-gold px-4 py-2 border-4 border-ink shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -rotate-2 transform">
+                Map Cleared!
+              </h2>
+            </div>
+            <p className="text-gray-800 font-bold mb-6 text-lg">You've found all the landmarks and cleared the fog of war. You are a Grandmaster Guide!</p>
+            <div className="w-full h-40 mx-auto mb-6 neo-brutalist bg-gold flex items-center justify-center overflow-hidden">
+              <img src="https://api.dicebear.com/9.x/bottts/svg?seed=Guide&backgroundColor=FFD700" alt="Guide" className="w-full h-full object-cover" />
+            </div>
+            <button 
+              onClick={() => setShowAllUnlockedModal(false)}
+              className="w-full neo-brutalist bg-gold hover:bg-gold-dark text-ink font-bold uppercase py-3 transition-colors text-xl"
+            >
+              View Full Map
+            </button>
+          </div>
+        </div>
+      )}
+
       {showSettings && (
         <SettingsModal 
           onClose={() => setShowSettings(false)} 

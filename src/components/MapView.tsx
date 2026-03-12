@@ -1,13 +1,21 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { LandmarkId, LANDMARKS } from '../types';
 import { MapPin, Lock, Unlock, X, Camera } from 'lucide-react';
 
 interface MapViewProps {
   unlockedLandmarks: LandmarkId[];
+  justUnlocked: LandmarkId | null;
   onSelectLandmark: (id: LandmarkId) => void;
 }
 
-export default function MapView({ unlockedLandmarks, onSelectLandmark }: MapViewProps) {
+const SECTOR_PATHS: Record<LandmarkId, string> = {
+  cafe: "M -200,-200 L 1200,-200 L 1200,450 C 900,300 700,600 500,550 C 300,500 100,100 -200,100 Z",
+  library: "M -200,100 C 100,100 300,500 500,550 C 400,800 600,900 400,1200 L -200,1200 Z",
+  statue: "M 500,550 C 700,600 900,300 1200,450 L 1200,1200 L 400,1200 C 600,900 400,800 500,550 Z"
+};
+
+export default function MapView({ unlockedLandmarks, justUnlocked, onSelectLandmark }: MapViewProps) {
   const [activeHint, setActiveHint] = useState<LandmarkId | null>(null);
 
   const handleNodeClick = (id: LandmarkId) => {
@@ -42,36 +50,46 @@ export default function MapView({ unlockedLandmarks, onSelectLandmark }: MapView
         </svg>
 
         {/* Fog of War Overlay */}
-        <div className="absolute inset-0 pointer-events-none z-10">
-          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <filter id="fog-noise" x="-20%" y="-20%" width="140%" height="140%">
-                <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="4" result="noise" />
-                <feColorMatrix type="matrix" values="0 0 0 0 0.8  0 0 0 0 0.8  0 0 0 0 0.8  1.5 0 0 0 -0.2" in="noise" />
-              </filter>
-              <mask id="fog-mask">
-                <rect width="100%" height="100%" fill="white" />
-                {unlockedLandmarks.map(id => {
-                  const lm = LANDMARKS[id];
-                  return (
-                    <circle 
-                      key={id} 
-                      cx={`${lm.x}%`} 
-                      cy={`${lm.y}%`} 
-                      r="25%" 
-                      fill="black" 
-                      filter="blur(15px)"
-                    />
-                  );
-                })}
-              </mask>
-            </defs>
-            <g mask="url(#fog-mask)">
-              <rect width="100%" height="100%" fill="rgba(17,17,17,0.9)" />
-              <rect width="100%" height="100%" fill="white" filter="url(#fog-noise)" opacity="0.5" />
-            </g>
-          </svg>
-        </div>
+        <AnimatePresence>
+          {unlockedLandmarks.length < 3 && (
+            <motion.div 
+              className="absolute inset-0 pointer-events-none z-10"
+              exit={{ opacity: 0 }}
+              transition={{ duration: 2 }}
+            >
+              <svg width="100%" height="100%" viewBox="0 0 1000 1000" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <filter id="fog-noise" x="-20%" y="-20%" width="140%" height="140%">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="4" result="noise" />
+                    <feColorMatrix type="matrix" values="0 0 0 0 0.8  0 0 0 0 0.8  0 0 0 0 0.8  1.5 0 0 0 -0.2" in="noise" />
+                  </filter>
+                  <mask id="fog-mask">
+                    <rect width="100%" height="100%" fill="white" />
+                    {unlockedLandmarks.map(id => (
+                      <motion.path 
+                        key={id} 
+                        d={SECTOR_PATHS[id]} 
+                        initial={id === justUnlocked ? { opacity: 0 } : false}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 2, ease: "easeOut" }}
+                        fill="black" 
+                        stroke="black"
+                        strokeWidth="150"
+                        strokeLinejoin="round"
+                        strokeLinecap="round"
+                        filter="blur(40px)"
+                      />
+                    ))}
+                  </mask>
+                </defs>
+                <g mask="url(#fog-mask)">
+                  <rect width="100%" height="100%" fill="rgba(17,17,17,0.9)" />
+                  <rect width="100%" height="100%" fill="white" filter="url(#fog-noise)" opacity="0.5" />
+                </g>
+              </svg>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Landmarks */}
         {Object.values(LANDMARKS).map(lm => {
@@ -131,14 +149,18 @@ export default function MapView({ unlockedLandmarks, onSelectLandmark }: MapView
               {/* Character & Dialogue */}
               <div className="flex items-end gap-5 mt-2">
                 {/* Character Avatar */}
-                <div className="w-16 h-16 shrink-0 neo-brutalist bg-gold overflow-hidden">
+                <motion.div 
+                  className="w-16 h-16 shrink-0 neo-brutalist bg-gold overflow-hidden"
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                >
                   <img 
                     src="https://api.dicebear.com/9.x/bottts/svg?seed=Guide&backgroundColor=FFD700" 
                     alt="Guide Character" 
                     className="w-full h-full object-cover"
                     referrerPolicy="no-referrer"
                   />
-                </div>
+                </motion.div>
 
                 {/* Speech Bubble */}
                 <div className="flex-1 neo-brutalist bg-white p-3 relative">
