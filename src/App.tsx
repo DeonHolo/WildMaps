@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Map, Camera, UserCircle, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Confetti from 'react-confetti';
@@ -10,8 +10,113 @@ import BadgesView from './components/BadgesView';
 import SettingsModal from './components/SettingsModal';
 import OnboardingModal from './components/OnboardingModal';
 import { playSubtleClick, playModalOpen, playSuccessChime, playGrandSuccessChime } from './utils/audio';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+
+gsap.registerPlugin(useGSAP);
 
 type View = 'map' | 'scan' | 'profile';
+
+function AchievementModal({ landmark, onClose, width, height }: any) {
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    gsap.from(overlayRef.current, { opacity: 0, duration: 0.3 });
+    gsap.from(containerRef.current, { 
+      y: 60, 
+      opacity: 0, 
+      scale: 0.85, 
+      rotation: -3,
+      duration: 0.6, 
+      ease: 'back.out(1.5)' 
+    });
+  }, []);
+
+  const handleClose = () => {
+    playSubtleClick();
+    gsap.to(containerRef.current, { y: 40, opacity: 0, scale: 0.9, rotation: 2, duration: 0.25, ease: 'power2.in' });
+    gsap.to(overlayRef.current, { opacity: 0, duration: 0.25, ease: 'power2.in', onComplete: onClose });
+  };
+
+  return (
+    <div ref={overlayRef} className="absolute inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+      <Confetti width={width} height={height} recycle={false} numberOfPieces={500} gravity={0.8} initialVelocityY={40} />
+      <div ref={containerRef} className="neo-brutalist-card bg-bg w-full max-w-sm flex flex-col relative text-center p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+        <div className="mb-4">
+          <h2 className="inline-block text-3xl font-black uppercase text-ink bg-gold px-4 py-2 border-4 border-ink shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -rotate-2 transform">
+            Sector Unlocked!
+          </h2>
+        </div>
+        <p className="text-gray-800 font-bold mb-6 text-lg">You've successfully mapped {landmark.name}.</p>
+        <div className="w-full h-40 mx-auto mb-6 neo-brutalist bg-white flex items-center justify-center overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          <img src={landmark.imageUrl} alt="Unlocked" className="w-full h-full object-cover" />
+        </div>
+        <button 
+          onClick={handleClose}
+          className="w-full neo-brutalist bg-gold hover:bg-gold-dark text-ink font-black uppercase py-3 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] text-xl"
+        >
+          Awesome!
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function MapClearedModal({ onClose, width, height }: any) {
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const characterRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    gsap.from(overlayRef.current, { opacity: 0, duration: 0.3 });
+    gsap.from(containerRef.current, { 
+      y: 60, 
+      opacity: 0, 
+      scale: 0.85, 
+      rotation: 3,
+      duration: 0.6, 
+      ease: 'back.out(1.5)' 
+    });
+    
+    gsap.to(characterRef.current, {
+      y: -8,
+      duration: 1.5,
+      yoyo: true,
+      repeat: -1,
+      ease: 'sine.inOut'
+    });
+  }, []);
+
+  const handleClose = () => {
+    playSubtleClick();
+    gsap.to(containerRef.current, { y: 40, opacity: 0, scale: 0.9, rotation: -2, duration: 0.25, ease: 'power2.in' });
+    gsap.to(overlayRef.current, { opacity: 0, duration: 0.25, ease: 'power2.in', onComplete: onClose });
+  };
+
+  return (
+    <div ref={overlayRef} className="absolute inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+      <Confetti width={width} height={height} recycle={true} numberOfPieces={200} gravity={0.5} initialVelocityY={30} />
+      <div ref={containerRef} className="neo-brutalist-card bg-bg w-full max-w-sm flex flex-col relative text-center p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+        <div className="mb-4">
+          <h2 className="inline-block text-3xl font-black uppercase text-ink bg-gold px-4 py-2 border-4 border-ink shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -rotate-2 transform">
+            Map Cleared!
+          </h2>
+        </div>
+        <p className="text-gray-800 font-bold mb-6 text-lg">You've found all the landmarks and cleared the fog of war. You are a Grandmaster Guide!</p>
+        <div ref={characterRef} className="w-full h-40 mx-auto mb-6 neo-brutalist bg-gold flex items-center justify-center overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          <img src="https://api.dicebear.com/9.x/bottts/svg?seed=Guide&backgroundColor=FFD700" alt="Guide" className="w-full h-full object-cover" />
+        </div>
+        <button 
+          onClick={handleClose}
+          className="w-full neo-brutalist bg-gold hover:bg-gold-dark text-ink font-black uppercase py-3 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] text-xl"
+        >
+          View Full Map
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
   const [currentView, setCurrentView] = useState<View>('map');
@@ -93,7 +198,6 @@ export default function App() {
 
   const changeView = (newView: View) => {
     if (currentView !== newView) {
-      if ('vibrate' in navigator) navigator.vibrate(10); // subtle click
       playSubtleClick();
     }
     const views: View[] = ['map', 'scan', 'profile'];
@@ -275,63 +379,20 @@ export default function App() {
 
       {/* Modals */}
       {showAchievementModal && (
-        <div className="absolute inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 animate-in fade-in duration-300">
-          <Confetti 
-            width={width} 
-            height={height} 
-            recycle={false} 
-            numberOfPieces={500} 
-            gravity={0.8} 
-            initialVelocityY={40} 
-          />
-          <div className="neo-brutalist-card bg-bg w-full max-w-sm flex flex-col relative animate-in zoom-in-95 duration-300 text-center p-6">
-            <div className="mb-4">
-              <h2 className="inline-block text-3xl font-black uppercase text-ink bg-gold px-4 py-2 border-4 border-ink shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -rotate-2 transform">
-                Sector Unlocked!
-              </h2>
-            </div>
-            <p className="text-gray-800 font-bold mb-6 text-lg">You've successfully mapped {LANDMARKS[showAchievementModal].name}.</p>
-            <div className="w-full h-40 mx-auto mb-6 neo-brutalist bg-white flex items-center justify-center overflow-hidden">
-              <img src={LANDMARKS[showAchievementModal].imageUrl} alt="Unlocked" className="w-full h-full object-cover" />
-            </div>
-            <button 
-              onClick={closeAchievementModal}
-              className="w-full neo-brutalist bg-gold hover:bg-gold-dark text-ink font-bold uppercase py-3 transition-colors text-xl"
-            >
-              Awesome!
-            </button>
-          </div>
-        </div>
+        <AchievementModal 
+          landmark={LANDMARKS[showAchievementModal]} 
+          onClose={closeAchievementModal} 
+          width={width} 
+          height={height} 
+        />
       )}
 
       {showAllUnlockedModal && (
-        <div className="absolute inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 animate-in fade-in duration-300">
-          <Confetti 
-            width={width} 
-            height={height} 
-            recycle={true} 
-            numberOfPieces={200} 
-            gravity={0.5} 
-            initialVelocityY={30} 
-          />
-          <div className="neo-brutalist-card bg-bg w-full max-w-sm flex flex-col relative animate-in zoom-in-95 duration-300 text-center p-6">
-            <div className="mb-4">
-              <h2 className="inline-block text-3xl font-black uppercase text-ink bg-gold px-4 py-2 border-4 border-ink shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -rotate-2 transform">
-                Map Cleared!
-              </h2>
-            </div>
-            <p className="text-gray-800 font-bold mb-6 text-lg">You've found all the landmarks and cleared the fog of war. You are a Grandmaster Guide!</p>
-            <div className="w-full h-40 mx-auto mb-6 neo-brutalist bg-gold flex items-center justify-center overflow-hidden">
-              <img src="https://api.dicebear.com/9.x/bottts/svg?seed=Guide&backgroundColor=FFD700" alt="Guide" className="w-full h-full object-cover" />
-            </div>
-            <button 
-              onClick={() => setShowAllUnlockedModal(false)}
-              className="w-full neo-brutalist bg-gold hover:bg-gold-dark text-ink font-bold uppercase py-3 transition-colors text-xl"
-            >
-              View Full Map
-            </button>
-          </div>
-        </div>
+        <MapClearedModal 
+          onClose={() => setShowAllUnlockedModal(false)} 
+          width={width} 
+          height={height} 
+        />
       )}
 
       {showSettings && (

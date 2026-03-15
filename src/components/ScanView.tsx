@@ -106,7 +106,6 @@ export default function ScanView({ targetId, onUnlock, onCancel }: ScanViewProps
           
           if (topPrediction.probability > 0.1) {
             // Success!
-            if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
             playScanComplete();
             setSuccess(true);
             clearInterval(interval);
@@ -126,7 +125,6 @@ export default function ScanView({ targetId, onUnlock, onCancel }: ScanViewProps
   // Debug unlock for testing
   const handleDebugUnlock = () => {
     if (targetId) {
-      if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
       playScanComplete();
       setSuccess(true);
       setTimeout(() => {

@@ -17,6 +17,9 @@ const initAudio = () => {
 
 export const playSubtleClick = () => {
   try {
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate(10);
+    }
     const ctx = initAudio();
     if (!ctx) return;
     
@@ -42,6 +45,9 @@ export const playSubtleClick = () => {
 
 export const playModalOpen = () => {
   try {
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate(15);
+    }
     const ctx = initAudio();
     if (!ctx) return;
     
@@ -68,6 +74,9 @@ export const playModalOpen = () => {
 
 export const playSuccessChime = () => {
   try {
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate([30, 50, 30, 50, 50]);
+    }
     const ctx = initAudio();
     if (!ctx) return;
     
@@ -101,6 +110,9 @@ export const playSuccessChime = () => {
 
 export const playGrandSuccessChime = () => {
   try {
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate([50, 100, 50, 100, 50, 100, 100]);
+    }
     const ctx = initAudio();
     if (!ctx) return;
     
@@ -136,6 +148,9 @@ export const playGrandSuccessChime = () => {
 
 export const playScanComplete = () => {
   try {
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate([100, 50, 100]);
+    }
     const ctx = initAudio();
     if (!ctx) return;
     

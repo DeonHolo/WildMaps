@@ -1,12 +1,18 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { X, ShieldAlert, RotateCcw, Phone, Info, HelpCircle, Share2, Copy, Check } from 'lucide-react';
 import {
   FacebookShareButton, FacebookIcon,
   TwitterShareButton, TwitterIcon,
   WhatsappShareButton, WhatsappIcon,
   TelegramShareButton, TelegramIcon,
-  RedditShareButton, RedditIcon
+  RedditShareButton, RedditIcon,
+  FacebookMessengerShareButton, FacebookMessengerIcon
 } from 'react-share';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { playSubtleClick } from '../utils/audio';
+
+gsap.registerPlugin(useGSAP);
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -18,44 +24,81 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
   const [confirmReset, setConfirmReset] = useState(false);
   const [showShareOptions, setShowShareOptions] = useState(false);
   const [copied, setCopied] = useState(false);
+  
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    gsap.from(overlayRef.current, { opacity: 0, duration: 0.3 });
+    gsap.from(containerRef.current, { 
+      y: 60, 
+      opacity: 0, 
+      scale: 0.9, 
+      rotation: -2,
+      duration: 0.5, 
+      ease: 'back.out(1.5)' 
+    });
+  }, []);
+
+  const animateClose = (callback: () => void) => {
+    gsap.to(containerRef.current, { 
+      y: 40, 
+      opacity: 0, 
+      scale: 0.95, 
+      rotation: 2,
+      duration: 0.25, 
+      ease: 'power2.in' 
+    });
+    gsap.to(overlayRef.current, { 
+      opacity: 0, 
+      duration: 0.25, 
+      ease: 'power2.in', 
+      onComplete: callback 
+    });
+  };
+
+  const handleClose = () => {
+    playSubtleClick();
+    animateClose(onClose);
+  };
+
+  const handleTutorial = () => {
+    playSubtleClick();
+    animateClose(onShowTutorial);
+  };
+
+  const handleReset = () => {
+    playSubtleClick();
+    animateClose(onReset);
+  };
 
   const shareData = {
-    text: `I'm exploring the CIT-U campus in WildMaps! Can you find all the landmarks?`,
+    text: `🗺️ I'm exploring the CIT-U campus in WildMaps! Can you find all the landmarks?`,
     url: 'https://wildmaps.vercel.app/',
   };
 
   const handleNativeShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'WildMaps',
-          text: `🗺️ I'm exploring the CIT-U campus in WildMaps! Can you find all the landmarks?\n\n📍 https://wildmaps.vercel.app/`
-        });
-      } catch (err) {
-        console.error('Error sharing:', err);
-        setShowShareOptions(true);
-      }
-    } else {
-      setShowShareOptions(true);
-    }
+    playSubtleClick();
+    setShowShareOptions(true);
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+    playSubtleClick();
+    navigator.clipboard.writeText(`${shareData.text} 📍 ${shareData.url}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-200">
-      <div className="neo-brutalist-card bg-bg w-full max-w-sm flex flex-col relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+    <div ref={overlayRef} className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+      <div ref={containerRef} className="neo-brutalist-card bg-bg w-full max-w-sm flex flex-col relative max-h-[90vh] overflow-y-auto shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
         {/* Header */}
         <div className="bg-ink text-white p-3 flex justify-between items-center border-b-4 border-ink sticky top-0 z-10">
           <h3 className="font-bold uppercase tracking-tight text-lg flex items-center gap-2">
             <Info size={20} />
             Settings & Info
           </h3>
-          <button onClick={onClose} className="hover:bg-white/20 p-1 rounded-none transition-colors">
+          <button onClick={handleClose} className="hover:bg-white/20 p-1 rounded-none transition-colors hover:rotate-90 duration-300">
             <X size={20} />
           </button>
         </div>
@@ -71,8 +114,8 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
               Need a refresher on how to use WildMaps?
             </p>
             <button 
-              onClick={onShowTutorial}
-              className="w-full neo-brutalist bg-white hover:bg-gray-100 text-ink font-bold uppercase py-3 flex items-center justify-center gap-2 transition-colors"
+              onClick={handleTutorial}
+              className="w-full neo-brutalist bg-white hover:bg-gray-100 text-ink font-black uppercase py-3 flex items-center justify-center gap-2 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)]"
             >
               Replay Tutorial
             </button>
@@ -91,39 +134,42 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
             {!showShareOptions ? (
               <button 
                 onClick={handleNativeShare}
-                className="w-full neo-brutalist bg-gold hover:bg-gold-dark text-ink font-bold uppercase py-3 flex items-center justify-center gap-2 transition-colors"
+                className="w-full neo-brutalist bg-gold hover:bg-gold-dark text-ink font-black uppercase py-3 flex items-center justify-center gap-2 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)]"
               >
                 <Share2 size={20} />
                 Share WildMaps
               </button>
             ) : (
-              <div className="bg-white border-2 border-ink p-3 flex flex-col gap-3">
+              <div className="bg-white border-2 border-ink p-3 flex flex-col gap-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-sm uppercase">Share via...</span>
-                  <button onClick={() => setShowShareOptions(false)} className="text-gray-500 hover:text-ink">
+                  <button onClick={() => { playSubtleClick(); setShowShareOptions(false); }} className="text-gray-500 hover:text-ink transition-colors hover:rotate-90 duration-300">
                     <X size={16} />
                   </button>
                 </div>
                 <div className="flex gap-3 justify-center flex-wrap">
-                  <FacebookShareButton url={shareData.url} quote={shareData.text}>
-                    <FacebookIcon size={40} round className="border-2 border-ink hover:scale-105 transition-transform" />
+                  <FacebookShareButton url={shareData.url} hashtag="#WildMaps">
+                    <FacebookIcon size={40} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full" />
                   </FacebookShareButton>
+                  <FacebookMessengerShareButton url={shareData.url} appId="868352648419614">
+                    <FacebookMessengerIcon size={40} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full" />
+                  </FacebookMessengerShareButton>
                   <TwitterShareButton url={shareData.url} title={shareData.text}>
-                    <TwitterIcon size={40} round className="border-2 border-ink hover:scale-105 transition-transform" />
+                    <TwitterIcon size={40} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full" />
                   </TwitterShareButton>
                   <WhatsappShareButton url={shareData.url} title={shareData.text} separator=" - ">
-                    <WhatsappIcon size={40} round className="border-2 border-ink hover:scale-105 transition-transform" />
+                    <WhatsappIcon size={40} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full" />
                   </WhatsappShareButton>
                   <TelegramShareButton url={shareData.url} title={shareData.text}>
-                    <TelegramIcon size={40} round className="border-2 border-ink hover:scale-105 transition-transform" />
+                    <TelegramIcon size={40} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full" />
                   </TelegramShareButton>
                   <RedditShareButton url={shareData.url} title={shareData.text}>
-                    <RedditIcon size={40} round className="border-2 border-ink hover:scale-105 transition-transform" />
+                    <RedditIcon size={40} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full" />
                   </RedditShareButton>
                 </div>
                 <button 
                   onClick={handleCopy}
-                  className={`w-full neo-brutalist font-bold uppercase py-2 flex items-center justify-center gap-2 transition-colors text-sm ${copied ? 'bg-green-400 text-ink' : 'bg-gray-200 hover:bg-gray-300 text-ink'}`}
+                  className={`w-full neo-brutalist font-black uppercase py-2 flex items-center justify-center gap-2 transition-all hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] text-sm ${copied ? 'bg-green-400 text-ink' : 'bg-gray-200 hover:bg-gray-300 text-ink'}`}
                 >
                   {copied ? <Check size={16} /> : <Copy size={16} />}
                   {copied ? 'Copied!' : 'Copy Link'}
@@ -155,22 +201,22 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
             </p>
             {!confirmReset ? (
               <button 
-                onClick={() => setConfirmReset(true)}
-                className="w-full neo-brutalist bg-red-500 hover:bg-red-600 text-white font-bold uppercase py-3 transition-colors"
+                onClick={() => { playSubtleClick(); setConfirmReset(true); }}
+                className="w-full neo-brutalist bg-red-500 hover:bg-red-600 text-white font-black uppercase py-3 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)]"
               >
                 Reset Progress
               </button>
             ) : (
               <div className="flex gap-2">
                 <button 
-                  onClick={() => setConfirmReset(false)}
-                  className="flex-1 neo-brutalist bg-gray-200 hover:bg-gray-300 text-ink font-bold uppercase py-3 transition-colors text-sm"
+                  onClick={() => { playSubtleClick(); setConfirmReset(false); }}
+                  className="flex-1 neo-brutalist bg-gray-200 hover:bg-gray-300 text-ink font-black uppercase py-3 transition-all hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] text-sm"
                 >
                   Cancel
                 </button>
                 <button 
-                  onClick={onReset}
-                  className="flex-1 neo-brutalist bg-red-600 hover:bg-red-700 text-white font-bold uppercase py-3 transition-colors text-sm"
+                  onClick={handleReset}
+                  className="flex-1 neo-brutalist bg-red-600 hover:bg-red-700 text-white font-black uppercase py-3 transition-all hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] text-sm"
                 >
                   Confirm Reset
                 </button>
