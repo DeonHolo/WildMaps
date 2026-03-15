@@ -71,8 +71,8 @@ To run this project locally:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/wildmaps.git
-   cd wildmaps
+   git clone https://github.com/DeonHolo/WildMaps.git
+   cd WildMaps
    ```
 
 2. **Install dependencies:**
