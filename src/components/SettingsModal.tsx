@@ -20,8 +20,7 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
   const [copied, setCopied] = useState(false);
 
   const shareData = {
-    title: 'WildMaps',
-    text: `I'm exploring the CIT-U campus in WildMaps! Can you find all the landmarks? Play here:`,
+    text: `I'm exploring the CIT-U campus in WildMaps! Can you find all the landmarks?`,
     url: 'https://wildmaps.vercel.app/',
   };
 
@@ -103,7 +102,7 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
                   </button>
                 </div>
                 <div className="flex gap-3 justify-center flex-wrap">
-                  <FacebookShareButton url={shareData.url} title={shareData.title}>
+                  <FacebookShareButton url={shareData.url} title={shareData.text}>
                     <FacebookIcon size={40} round className="border-2 border-ink hover:scale-105 transition-transform" />
                   </FacebookShareButton>
                   <TwitterShareButton url={shareData.url} title={shareData.text}>

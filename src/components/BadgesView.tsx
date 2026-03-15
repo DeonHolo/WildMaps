@@ -25,6 +25,7 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
   const [tempName, setTempName] = useState(playerName);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [tempAvatarSeed, setTempAvatarSeed] = useState(avatarSeed);
+  const [showRankModal, setShowRankModal] = useState(false);
 
   const totalLandmarks = Object.keys(LANDMARKS).length;
   const unlockedCount = unlockedLandmarks.length;
@@ -41,6 +42,10 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
     }
   };
 
+  const getArticle = (rank: string) => {
+    return /^[AEIOU]/i.test(rank) ? 'an' : 'a';
+  };
+
   const handleSaveName = () => {
     playSubtleClick();
     if (tempName.trim()) {
@@ -55,8 +60,10 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
     playSubtleClick();
     if (navigator.share) {
       try {
+        const rank = getRank(unlockedCount);
         await navigator.share({
-          text: `I'm a ${getRank(unlockedCount)} on WildMaps! Can you beat my exploration progress?\n\n${window.location.href}`,
+          text: `I'm ${getArticle(rank)} ${rank} on WildMaps! Can you beat my exploration progress?`,
+          url: 'https://wildmaps.vercel.app/',
         });
       } catch (err) {
         console.log('Error sharing:', err);
@@ -110,14 +117,6 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
         
         {/* Profile Section */}
         <div className="bg-white neo-brutalist-card p-5 mb-6 relative shrink-0">
-          <button 
-            onClick={handleShare}
-            className="absolute top-4 right-4 text-gray-400 hover:text-ink transition-colors z-20"
-            title="Share Progress"
-          >
-            <Share2 size={20} />
-          </button>
-          
           <div className="flex items-start gap-4 relative z-10">
             <button 
               onClick={openAvatarModal}
@@ -160,11 +159,21 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
                 </div>
               )}
 
-              <div className="mt-3">
-                <div className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs md:text-sm font-mono bg-maroon text-white px-2 py-1 border-2 border-ink font-bold uppercase w-full sm:w-auto overflow-hidden">
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button 
+                  onClick={() => { playModalOpen(); setShowRankModal(true); }}
+                  className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-mono bg-maroon text-white px-2 py-1 border-2 border-ink font-bold uppercase hover:bg-red-800 transition-colors cursor-pointer max-w-full"
+                >
                   <Star size={14} className="text-gold shrink-0" />
                   <span className="truncate">Rank: {getRank(unlockedCount)}</span>
-                </div>
+                </button>
+                <button 
+                  onClick={handleShare}
+                  className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-mono bg-blue-500 text-white px-2 py-1 border-2 border-ink font-bold uppercase hover:bg-blue-600 transition-colors cursor-pointer"
+                >
+                  <Share2 size={14} className="shrink-0" />
+                  Share
+                </button>
               </div>
             </div>
           </div>
@@ -239,13 +248,61 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
           })}
         </div>
 
-        {isComplete && (
-          <div className="mt-6 bg-maroon text-white neo-brutalist-card p-6 text-center animate-in slide-in-from-bottom-4 duration-500 mb-20">
-            <h2 className="text-2xl font-bold uppercase mb-2 text-gold">Grandmaster Guide!</h2>
-            <p className="text-sm">You have successfully navigated the entire campus and cleared the Fog of War. You are now ready for the semester!</p>
-          </div>
-        )}
       </div>
+
+      {/* Rank Modal */}
+      {showRankModal && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-200">
+          <div className="neo-brutalist-card bg-bg w-full max-w-sm flex flex-col relative animate-in zoom-in-95 duration-200">
+            <div className="bg-maroon text-white p-3 flex justify-between items-center border-b-4 border-ink">
+              <h3 className="font-bold uppercase tracking-tight text-lg flex items-center gap-2">
+                <Star size={20} className="text-gold" />
+                Explorer Rank
+              </h3>
+              <button onClick={() => { playSubtleClick(); setShowRankModal(false); }} className="hover:bg-white/20 p-1 rounded-none transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-5 flex flex-col gap-4">
+              <div className="text-center">
+                <p className="text-sm font-bold text-gray-500 uppercase mb-1">Current Rank</p>
+                <h2 className="text-2xl font-black text-ink uppercase">{getRank(unlockedCount)}</h2>
+                <p className="text-sm font-mono mt-2 bg-gold/30 inline-block px-2 py-1 border border-gold font-bold">
+                  {unlockedCount} / {totalLandmarks} Sectors Unlocked
+                </p>
+              </div>
+
+              <div className="space-y-2 mt-2">
+                {[
+                  { count: 0, name: 'Novice Tourist' },
+                  { count: 1, name: 'Adept Pathfinder' },
+                  { count: 2, name: 'Master Cartographer' },
+                  { count: 3, name: 'Grandmaster Guide' }
+                ].map(rank => {
+                  const isCurrent = getRank(unlockedCount) === rank.name;
+                  const isLocked = unlockedCount < rank.count;
+                  return (
+                    <div key={rank.name} className={`p-3 border-2 flex items-center justify-between ${isCurrent ? 'bg-gold border-ink font-bold shadow-[4px_4px_0px_0px_var(--color-ink)]' : isLocked ? 'bg-gray-100 border-gray-300 text-gray-400' : 'bg-white border-ink'}`}>
+                      <div className="flex items-center gap-2">
+                        {isCurrent ? <Star size={16} className="text-maroon" /> : isLocked ? <Lock size={16} /> : <Check size={16} className="text-green-600" />}
+                        <span className="uppercase text-sm">{rank.name}</span>
+                      </div>
+                      <span className="font-mono text-xs">{rank.count} Badges</span>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {isComplete && (
+                <div className="mt-2 bg-maroon text-white p-4 text-center border-2 border-ink">
+                  <h4 className="font-bold text-gold uppercase mb-1">Campus Conquered!</h4>
+                  <p className="text-xs">You have successfully navigated the entire campus and cleared the Fog of War. You are now ready for the semester!</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Avatar Customization Modal */}
       {showAvatarModal && (
