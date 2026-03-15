@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { LandmarkId, LANDMARKS } from '../types';
-import { Award, Lock, CheckCircle2, Trophy, User, Edit2, Check, Star, X, RotateCcw, Share2, Copy, Smartphone } from 'lucide-react';
+import { Award, Lock, CheckCircle2, Trophy, User, Edit2, Check, Star, X, RotateCcw, Share2, Copy } from 'lucide-react';
 import { playSubtleClick, playModalOpen } from '../utils/audio';
 import {
   FacebookShareButton, FacebookIcon,
@@ -248,7 +248,7 @@ function ShareModal({ shareData, onClose }: any) {
   const [copied, setCopied] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const supportsNativeShare = typeof navigator !== 'undefined' && !!navigator.share;
+
 
   useGSAP(() => {
     gsap.from(overlayRef.current, { opacity: 0, duration: 0.3 });
@@ -287,15 +287,9 @@ function ShareModal({ shareData, onClose }: any) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleNativeShare = async () => {
+  const handleMessengerShare = () => {
     playSubtleClick();
-    try {
-      await navigator.share({
-        text: `${shareData.text} ${shareData.url}`,
-      });
-    } catch (err) {
-      // User cancelled or share failed — silently ignore
-    }
+    window.open(`fb-messenger://share/?link=${encodeURIComponent(shareData.url)}`, '_blank');
   };
 
   return (
@@ -311,22 +305,22 @@ function ShareModal({ shareData, onClose }: any) {
           </button>
         </div>
         <div className="p-5 flex flex-col gap-4">
-          {/* Native Share (mobile — lets user pick Messenger, SMS, etc.) */}
-          {supportsNativeShare && (
-            <button
-              onClick={handleNativeShare}
-              className="w-full neo-brutalist bg-gold hover:bg-gold-dark text-ink font-black uppercase py-3 flex items-center justify-center gap-2 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)]"
-            >
-              <Smartphone size={20} />
-              Share via Apps
-            </button>
-          )}
-
-          <p className="text-sm font-bold text-center text-ink uppercase">{supportsNativeShare ? 'Or share directly:' : 'Choose how to share:'}</p>
+          <p className="text-sm font-bold text-center text-ink uppercase">Choose how to share:</p>
           <div className="flex gap-3 justify-center flex-wrap">
             <FacebookShareButton url={shareData.url} hashtag="#WildMaps" quote={shareData.text}>
               <FacebookIcon size={40} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full" />
             </FacebookShareButton>
+            <button
+              onClick={handleMessengerShare}
+              className="hover:scale-105 transition-transform"
+              title="Share via Messenger"
+            >
+              <div className="w-[40px] h-[40px] rounded-full bg-[#0099FF] flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="white">
+                  <path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.2 5.42 3.15 7.15.16.14.26.34.27.56l.05 1.78c.02.56.6.93 1.11.7l1.98-.87c.17-.08.36-.1.55-.06.93.26 1.92.4 2.89.4 5.64 0 10-4.13 10-9.7S17.64 2 12 2zm5.89 7.54l-2.89 4.54c-.46.72-1.41.9-2.09.39l-2.3-1.72a.6.6 0 00-.72 0l-3.1 2.35c-.41.31-.96-.18-.68-.62l2.89-4.54c.46-.72 1.41-.9 2.09-.39l2.3 1.72a.6.6 0 00.72 0l3.1-2.35c.41-.31.96.18.68.62z"/>
+                </svg>
+              </div>
+            </button>
             <TwitterShareButton url={shareData.url} title={shareData.text}>
               <TwitterIcon size={40} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full" />
             </TwitterShareButton>
