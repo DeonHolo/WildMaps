@@ -13,10 +13,21 @@
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 }
 
-body {
+html, body {
   background-color: #e5e7eb; /* Neutral gray for PC view */
   color: var(--color-ink);
   font-family: var(--font-sans);
+  overscroll-behavior: none;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 .bg-grid-pattern {

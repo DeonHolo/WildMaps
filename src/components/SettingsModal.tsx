@@ -27,7 +27,9 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
   const handleNativeShare = async () => {
     if (navigator.share) {
       try {
-        await navigator.share(shareData);
+        await navigator.share({
+          text: `${shareData.text}\n${shareData.url}`
+        });
       } catch (err) {
         console.error('Error sharing:', err);
         setShowShareOptions(true);

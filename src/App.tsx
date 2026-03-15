@@ -177,9 +177,9 @@ export default function App() {
   };
 
   return (
-    <div className="h-[100dvh] flex flex-col max-w-md mx-auto border-x-4 border-ink relative overflow-hidden bg-bg bg-grid-pattern shadow-2xl">
+    <div className="h-full flex flex-col max-w-md mx-auto border-x-4 border-ink relative overflow-hidden bg-bg bg-grid-pattern shadow-2xl">
       {/* Header */}
-      <header className="bg-maroon text-bg p-4 border-b-4 border-ink flex justify-between items-center z-10">
+      <header className="shrink-0 bg-maroon text-bg p-4 border-b-4 border-ink flex justify-between items-center z-10">
         <h1 className="text-2xl font-bold uppercase tracking-tighter">WildMaps</h1>
         <div className="flex items-center gap-3">
           <motion.button 
@@ -246,7 +246,7 @@ export default function App() {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="bg-gold border-t-4 border-ink flex p-3 z-10">
+      <nav className="shrink-0 bg-gold border-t-4 border-ink flex p-3 z-10">
         <motion.button 
           whileTap={{ scale: 0.95 }}
           onClick={() => changeView('map')}
