@@ -292,8 +292,7 @@ function ShareModal({ shareData, onClose }: any) {
     try {
       await navigator.share({
         title: 'WildMaps',
-        text: shareData.text,
-        url: shareData.url,
+        text: `${shareData.text}\n${shareData.url}`,
       });
     } catch (err) {
       // User cancelled or share failed — silently ignore
