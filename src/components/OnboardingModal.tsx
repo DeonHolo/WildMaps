@@ -168,7 +168,7 @@ export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
         {/* Skip Button */}
         <button 
           onClick={handleSkip}
-          className="absolute top-2 right-2 p-2 text-gray-400 hover:text-ink transition-colors z-10 hover:rotate-90 duration-300 bg-white/80 rounded-full hover:bg-white shadow-none hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] border-2 border-transparent hover:border-ink"
+          className="absolute top-2 right-2 p-2 text-gray-400 hover:text-ink transition-colors z-[100] hover:rotate-90 duration-300 bg-transparent hover:bg-white/50 rounded-full"
         >
           <X size={24} />
         </button>
@@ -183,9 +183,10 @@ export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
               >
                 <div className="absolute inset-0 bg-gold/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out z-10" />
                 <img 
+                  key={step.image}
                   src={step.image} 
                   alt={step.title} 
-                  className="w-full h-full object-cover relative z-0"
+                  className="w-full h-full object-cover relative z-0 animate-[fadeIn_0.3s_ease-out]"
                   referrerPolicy="no-referrer"
                 />
               </div>

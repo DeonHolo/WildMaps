@@ -153,6 +153,18 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
                 </div>
 
                 <div className="flex gap-3 justify-center flex-wrap">
+                  {/* QR Code */}
+                  <div className="w-full flex flex-col items-center justify-center p-2 mb-2 bg-gray-50 border-2 border-dashed border-gray-300">
+                    <p className="text-xs font-bold uppercase text-gray-500 mb-2">Scan to Play</p>
+                    <img 
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(shareData.url)}&color=1a1a1a&bgcolor=ffffff`}
+                      alt="WildMaps QR Code"
+                      width={120}
+                      height={120}
+                      className="shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-2 border-ink"
+                    />
+                  </div>
+
                   <FacebookShareButton url={shareData.url} hashtag="#WildMaps" quote={shareData.text}>
                     <FacebookIcon size={40} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full" />
                   </FacebookShareButton>
