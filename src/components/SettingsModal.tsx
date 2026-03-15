@@ -28,9 +28,8 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'WildMaps',
-          text: `I'm exploring the CIT-U campus in WildMaps! Can you find all the landmarks?`,
-          url: 'https://wildmaps.vercel.app/'
+          title: '',
+          text: `I'm exploring the CIT-U campus in WildMaps! Can you find all the landmarks?\n\nhttps://wildmaps.vercel.app/`
         });
       } catch (err) {
         console.error('Error sharing:', err);
@@ -106,7 +105,7 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
                   </button>
                 </div>
                 <div className="flex gap-3 justify-center flex-wrap">
-                  <FacebookShareButton url={shareData.url} title={shareData.text}>
+                  <FacebookShareButton url={shareData.url} quote={shareData.text}>
                     <FacebookIcon size={40} round className="border-2 border-ink hover:scale-105 transition-transform" />
                   </FacebookShareButton>
                   <TwitterShareButton url={shareData.url} title={shareData.text}>

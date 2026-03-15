@@ -62,9 +62,8 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
       try {
         const rank = getRank(unlockedCount);
         await navigator.share({
-          title: 'WildMaps',
-          text: `I'm ${getArticle(rank)} ${rank} on WildMaps! Can you beat my exploration progress?`,
-          url: 'https://wildmaps.vercel.app/'
+          title: '',
+          text: `I'm ${getArticle(rank)} ${rank} on WildMaps! Can you beat my exploration progress?\n\nhttps://wildmaps.vercel.app/`
         });
       } catch (err) {
         console.log('Error sharing:', err);
