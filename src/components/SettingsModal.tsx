@@ -28,7 +28,9 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
     if (navigator.share) {
       try {
         await navigator.share({
-          text: `${shareData.text}\n${shareData.url}`
+          title: 'WildMaps',
+          text: `I'm exploring the CIT-U campus in WildMaps! Can you find all the landmarks?`,
+          url: 'https://wildmaps.vercel.app/'
         });
       } catch (err) {
         console.error('Error sharing:', err);
