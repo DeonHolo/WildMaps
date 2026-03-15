@@ -86,8 +86,7 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
     playSubtleClick();
     try {
       await navigator.share({
-        title: 'WildMaps',
-        text: `${shareData.text}\n${shareData.url}`,
+        url: shareData.url,
       });
     } catch (err) {
       // User cancelled or share failed — silently ignore
