@@ -24,6 +24,7 @@ export default function ScanView({ targetId, unlockedLandmarks, onUnlock, onCanc
   const [torchSupported, setTorchSupported] = useState(false);
 
   const target = targetId ? LANDMARKS[targetId] : null;
+  const isFreeMode = unlockedLandmarks.length >= 3;
 
   // Load Model
   useEffect(() => {
@@ -95,10 +96,10 @@ export default function ScanView({ targetId, unlockedLandmarks, onUnlock, onCanc
 
   // Continuous Scan Effect
   useEffect(() => {
-    // Prevent scanning if already unlocked (unless all 3 are found)
-    const isAlreadyUnlocked = targetId && unlockedLandmarks.includes(targetId) && unlockedLandmarks.length < 3;
+    // Prevent scanning to unlock if already unlocked (unless all 3 are found, which makes it free mode)
+    const isAlreadyUnlocked = targetId && unlockedLandmarks.includes(targetId) && !isFreeMode;
     
-    if (!model || !isVideoReady || success || !targetId || isAlreadyUnlocked) return;
+    if (!model || !isVideoReady || success || (isAlreadyUnlocked && !isFreeMode) || (!targetId && !isFreeMode)) return;
 
     const interval = setInterval(async () => {
       if (!videoRef.current) return;
@@ -108,13 +109,13 @@ export default function ScanView({ targetId, unlockedLandmarks, onUnlock, onCanc
           const topPrediction = predictions[0];
           setScanResult(topPrediction);
           
-          if (topPrediction.probability > 0.1) {
-            // Success!
+          if (topPrediction.probability > 0.1 && !isFreeMode) {
+            // Success! (Only unlock if not in free mode)
             playScanComplete();
             setSuccess(true);
             clearInterval(interval);
             setTimeout(() => {
-              onUnlock(targetId);
+              if (targetId) onUnlock(targetId);
             }, 2000);
           }
         }
@@ -128,7 +129,8 @@ export default function ScanView({ targetId, unlockedLandmarks, onUnlock, onCanc
 
   // Debug unlock for testing
   const handleDebugUnlock = () => {
-    const isAlreadyUnlocked = targetId && unlockedLandmarks.includes(targetId) && unlockedLandmarks.length < 3;
+    if (isFreeMode) return;
+    const isAlreadyUnlocked = targetId && unlockedLandmarks.includes(targetId) && !isFreeMode;
     if (targetId && !isAlreadyUnlocked) {
       playScanComplete();
       setSuccess(true);
@@ -143,7 +145,7 @@ export default function ScanView({ targetId, unlockedLandmarks, onUnlock, onCanc
     onCancel();
   };
 
-  if (!target) {
+  if (!target && !isFreeMode) {
     return (
       <div className="absolute inset-0 p-6 flex flex-col items-center justify-center">
         <div className="neo-brutalist-card bg-white p-6 text-center max-w-sm">
@@ -166,9 +168,11 @@ export default function ScanView({ targetId, unlockedLandmarks, onUnlock, onCanc
       {/* Header */}
       <div className="bg-gold text-ink p-4 flex justify-between items-center z-10 border-b-4 border-ink">
         <div>
-          <h2 className="text-sm font-mono uppercase opacity-80">Current Target</h2>
+          <h2 className="text-sm font-mono uppercase opacity-80">
+            {isFreeMode ? 'Free Exploration' : 'Current Target'}
+          </h2>
           <p className="font-bold text-lg">
-            {success ? target.name : `??? (${target.shortHint})`}
+            {isFreeMode ? 'Playground Mode' : (success ? target?.name : `??? (${target?.shortHint})`)}
           </p>
         </div>
         <button onClick={handleCancel} className="p-2 hover:bg-white/20 rounded-full transition-colors">
@@ -266,9 +270,9 @@ export default function ScanView({ targetId, unlockedLandmarks, onUnlock, onCanc
 
         <div className={`
           w-full py-4 flex items-center justify-center neo-brutalist font-bold uppercase text-lg
-          ${success ? 'bg-green-500 text-white' : 'bg-gold text-ink'}
+          ${success && !isFreeMode ? 'bg-green-500 text-white' : (isFreeMode ? 'bg-[#c0aede] text-ink' : 'bg-gold text-ink')}
         `}>
-          {success ? (
+          {success && !isFreeMode ? (
             <>
               <CheckCircle2 size={24} className="mr-2" />
               Verified
@@ -276,18 +280,20 @@ export default function ScanView({ targetId, unlockedLandmarks, onUnlock, onCanc
           ) : (
             <>
               <ScanLine size={24} className="mr-2 animate-pulse" />
-              Auto-Scanning...
+              {isFreeMode ? 'Free Scanning...' : 'Auto-Scanning...'}
             </>
           )}
         </div>
 
         {/* Debug button for easy testing without a real camera/model match */}
-        <button 
-          onClick={handleDebugUnlock}
-          className="w-full mt-4 py-2 text-xs font-mono text-gray-500 underline hover:text-ink"
-        >
-          [Debug] Force Unlock Sector
-        </button>
+        {!isFreeMode && (
+          <button 
+            onClick={handleDebugUnlock}
+            className="w-full mt-4 py-2 text-xs font-mono text-gray-500 underline hover:text-ink"
+          >
+            [Debug] Force Unlock Sector
+          </button>
+        )}
       </div>
     </div>
   );
