@@ -136,11 +136,11 @@ export const playGrandSuccessChime = () => {
 
     const now = ctx.currentTime;
     // Triumphant fanfare (C major: G4 - C5 - E5 - G5)
-    playNote(392.00, now, 0.2);       // G4
-    playNote(523.25, now + 0.15, 0.2); // C5
-    playNote(659.25, now + 0.3, 0.2); // E5
-    playNote(783.99, now + 0.45, 0.8, 0.04); // G5 (held longer, slightly louder)
-    playNote(523.25, now + 0.45, 0.8, 0.02); // C5 (harmony)
+    playNote(392.00, now, 0.25);       // G4
+    playNote(523.25, now + 0.2, 0.25); // C5
+    playNote(659.25, now + 0.4, 0.3); // E5
+    playNote(783.99, now + 0.6, 1.5, 0.04); // G5 (held longer, slightly louder)
+    playNote(523.25, now + 0.6, 1.5, 0.02); // C5 (harmony)
   } catch (e) {
     // Ignore audio errors
   }
@@ -170,6 +170,35 @@ export const playScanComplete = () => {
     
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.2);
+  } catch (e) {
+    // Ignore audio errors
+  }
+};
+
+export const playResetSound = () => {
+  try {
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate([20, 100, 20]);
+    }
+    const ctx = initAudio();
+    if (!ctx) return;
+    
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(150, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + 0.3);
+    
+    gain.gain.setValueAtTime(0, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.02, ctx.currentTime + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.3);
   } catch (e) {
     // Ignore audio errors
   }

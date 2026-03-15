@@ -3,13 +3,12 @@ import { X, ShieldAlert, RotateCcw, Info, HelpCircle, Share2, Copy, Check, Downl
 import {
   FacebookShareButton, FacebookIcon,
   TwitterShareButton, TwitterIcon,
-  WhatsappShareButton, WhatsappIcon,
   TelegramShareButton, TelegramIcon,
   RedditShareButton, RedditIcon,
 } from 'react-share';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { playSubtleClick } from '../utils/audio';
+import { playSubtleClick, playResetSound } from '../utils/audio';
 
 gsap.registerPlugin(useGSAP);
 
@@ -68,7 +67,7 @@ function ShareModal({ shareData, onClose }: { shareData: any, onClose: () => voi
 
   const handleDownloadQR = () => {
     playSubtleClick();
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=512x512&data=${encodeURIComponent(shareData.url)}&color=1a1a1a&bgcolor=ffffff`;
+    const qrUrl = '/wildmaps-qr.png';
     
     // Create an invisible link and trigger a download
     fetch(qrUrl)
@@ -103,7 +102,7 @@ function ShareModal({ shareData, onClose }: { shareData: any, onClose: () => voi
           <div className="w-full flex flex-col items-center justify-center p-4">
             <p className="text-sm font-bold uppercase text-ink mb-3 tracking-widest">Scan to Play</p>
             <img 
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(shareData.url)}&color=1a1a1a&bgcolor=ffffff`}
+              src="/wildmaps-qr.png"
               alt="WildMaps QR Code"
               width={160}
               height={160}
@@ -136,9 +135,6 @@ function ShareModal({ shareData, onClose }: { shareData: any, onClose: () => voi
             <TwitterShareButton url={shareData.url} title={shareData.text}>
               <TwitterIcon size={44} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full border-2 border-ink" />
             </TwitterShareButton>
-            <WhatsappShareButton url={shareData.url} title={shareData.text} separator=" - ">
-              <WhatsappIcon size={44} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full border-2 border-ink" />
-            </WhatsappShareButton>
             <TelegramShareButton url={shareData.url} title={shareData.text}>
               <TelegramIcon size={44} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full border-2 border-ink" />
             </TelegramShareButton>
@@ -295,7 +291,7 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
             </p>
             {!confirmReset ? (
               <button 
-                onClick={() => { playSubtleClick(); setConfirmReset(true); }}
+                onClick={() => { playResetSound(); setConfirmReset(true); }}
                 className="w-full neo-brutalist bg-red-500 hover:bg-red-600 text-white font-black uppercase py-3 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)]"
               >
                 Reset Progress
