@@ -86,7 +86,7 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
     playSubtleClick();
     try {
       await navigator.share({
-        url: shareData.url,
+        text: `${shareData.text} ${shareData.url}`,
       });
     } catch (err) {
       // User cancelled or share failed — silently ignore
