@@ -64,17 +64,19 @@ function ShareModal({ shareData, onClose }: { shareData: any, onClose: () => voi
     playSubtleClick();
     if (navigator.share) {
       try {
+        // Share ONLY the URL — no text field at all.
+        // Messenger auto-generates a rich link preview from OG meta tags,
+        // so the og:description in index.html IS the message.
+        // Adding any text param causes Messenger to show text + preview = duplication.
         await navigator.share({
-          // Combine text and url into a single text block to prevent Messenger double-copy bug
-          url: `🗺️ I'm exploring the CIT-U campus in WildMaps! Can you find all the landmarks? 📍 https://wildmaps.vercel.app/`
+          url: shareData.url
         });
       } catch (err) {
         console.error('Error sharing:', err);
       }
     } else {
-      // Fallback for desktop/unsupported browsers
-      const messengerUrl = `fb-messenger://share/?link=${encodeURIComponent(shareData.url)}`;
-      window.open(messengerUrl, '_blank');
+      // Fallback for desktop: open Messenger deep link
+      window.open(`fb-messenger://share/?link=${encodeURIComponent(shareData.url)}`, '_blank');
     }
   };
 
