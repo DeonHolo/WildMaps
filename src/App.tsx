@@ -9,7 +9,7 @@ import ScanView from './components/ScanView';
 import BadgesView from './components/BadgesView';
 import SettingsModal from './components/SettingsModal';
 import OnboardingModal from './components/OnboardingModal';
-import { playSubtleClick, playModalOpen, playSuccessChime } from './utils/audio';
+import { playSubtleClick, playModalOpen, playSuccessChime, playGrandSuccessChime } from './utils/audio';
 
 type View = 'map' | 'scan' | 'profile';
 
@@ -122,7 +122,7 @@ export default function App() {
     if (unlockedLandmarks.length === 3) {
       setTimeout(() => {
         setShowAllUnlockedModal(true);
-        playSuccessChime();
+        playGrandSuccessChime();
       }, 500);
     }
   };
@@ -182,14 +182,17 @@ export default function App() {
       <header className="bg-maroon text-bg p-4 border-b-4 border-ink flex justify-between items-center z-10">
         <h1 className="text-2xl font-bold uppercase tracking-tighter">WildMaps</h1>
         <div className="flex items-center gap-3">
-          <motion.div 
+          <motion.button 
             key={unlockedLandmarks.length}
+            onClick={() => changeView('profile')}
+            whileTap={{ scale: 0.9 }}
             animate={{ scale: [1.3, 1], rotate: [-5, 0] }}
             transition={{ duration: 0.4, type: 'spring', bounce: 0.5 }}
-            className="font-mono text-sm bg-gold text-ink px-2 py-1 border-2 border-ink font-bold whitespace-nowrap shrink-0 origin-right"
+            className="font-mono text-sm bg-gold text-ink px-2 py-1 border-2 border-ink font-bold whitespace-nowrap shrink-0 origin-right cursor-pointer hover:bg-yellow-300"
+            title="View Profile & Badges"
           >
             {unlockedLandmarks.length}/3 FOUND
-          </motion.div>
+          </motion.button>
           <button 
             onClick={openSettings}
             className="p-1 hover:bg-white/20 transition-colors shrink-0"

@@ -56,9 +56,7 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'WildMaps Explorer',
-          text: `I'm a ${getRank(unlockedCount)} on WildMaps! I've unlocked ${unlockedCount}/${totalLandmarks} campus sectors. Can you beat my exploration progress?`,
-          url: window.location.href,
+          text: `I'm a ${getRank(unlockedCount)} on WildMaps! Can you beat my exploration progress?\n\n${window.location.href}`,
         });
       } catch (err) {
         console.log('Error sharing:', err);

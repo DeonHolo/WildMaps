@@ -99,6 +99,41 @@ export const playSuccessChime = () => {
   }
 };
 
+export const playGrandSuccessChime = () => {
+  try {
+    const ctx = initAudio();
+    if (!ctx) return;
+    
+    const playNote = (freq: number, startTime: number, duration: number, vol: number = 0.03) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+      
+      gain.gain.setValueAtTime(0, startTime);
+      gain.gain.linearRampToValueAtTime(vol, startTime + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+      
+      osc.start(startTime);
+      osc.stop(startTime + duration);
+    };
+
+    const now = ctx.currentTime;
+    // Triumphant fanfare (C major: G4 - C5 - E5 - G5)
+    playNote(392.00, now, 0.2);       // G4
+    playNote(523.25, now + 0.15, 0.2); // C5
+    playNote(659.25, now + 0.3, 0.2); // E5
+    playNote(783.99, now + 0.45, 0.8, 0.04); // G5 (held longer, slightly louder)
+    playNote(523.25, now + 0.45, 0.8, 0.02); // C5 (harmony)
+  } catch (e) {
+    // Ignore audio errors
+  }
+};
+
 export const playScanComplete = () => {
   try {
     const ctx = initAudio();
