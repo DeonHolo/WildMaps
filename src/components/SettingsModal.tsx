@@ -60,12 +60,23 @@ function ShareModal({ shareData, onClose }: { shareData: any, onClose: () => voi
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleMessengerShare = () => {
+  const handleMessengerShare = async () => {
     playSubtleClick();
-    // Experimental: Trying a hardcoded string to see if the Messenger app accepts it better than the dynamic block
-    const hardcodedText = "🏆 I'm exploring the CIT-U Campus on WildMaps! Can you find all the landmarks?";
-    const messengerUrl = `fb-messenger://share/?link=${encodeURIComponent(shareData.url)}&text=${encodeURIComponent(hardcodedText)}&quote=${encodeURIComponent(hardcodedText)}`;
-    window.open(messengerUrl, '_blank');
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'WildMaps',
+          text: shareData.text,
+          url: shareData.url
+        });
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    } else {
+      // Fallback for desktop/unsupported browsers
+      const messengerUrl = `fb-messenger://share/?link=${encodeURIComponent(shareData.url)}`;
+      window.open(messengerUrl, '_blank');
+    }
   };
 
   const handleDownloadQR = () => {
