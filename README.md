@@ -1,9 +1,5 @@
 <div align="center">
-  <img width="100%" alt="WildMaps Banner" src="public/WildMaps%20Banner.png" />
-  
-  <br/>
-  
-  <h1>🗺️ WildMaps</h1>
+  <h1>WildMaps</h1>
   
   <p>
     <strong>An interactive, AI-powered campus exploration game built for CIT-U.</strong>
