@@ -60,22 +60,22 @@ function ShareModal({ shareData, onClose }: { shareData: any, onClose: () => voi
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleMessengerShare = async () => {
+  const handleMessengerShare = () => {
     playSubtleClick();
-    if (navigator.share) {
-      try {
-        // Share ONLY the URL — no text field at all.
-        // Messenger auto-generates a rich link preview from OG meta tags,
-        // so the og:description in index.html IS the message.
-        // Adding any text param causes Messenger to show text + preview = duplication.
-        await navigator.share({
-          url: shareData.url
-        });
-      } catch (err) {
-        console.error('Error sharing:', err);
-      }
+    const message = `${shareData.text}\n${shareData.url}`;
+    const isAndroid = /android/i.test(navigator.userAgent);
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+    if (isAndroid) {
+      // Android intent:// bypasses Web Share API duplication bug
+      const intentUrl = `intent://send/#Intent;package=com.facebook.orca;scheme=fb-messenger;S.android.intent.extra.TEXT=${encodeURIComponent(message)};end`;
+      window.location.href = intentUrl;
+    } else if (isIOS) {
+      // iOS: copy message to clipboard, then open Messenger with just the link
+      navigator.clipboard.writeText(message).catch(() => { });
+      window.location.href = `fb-messenger://share/?link=${encodeURIComponent(shareData.url)}`;
     } else {
-      // Fallback for desktop: open Messenger deep link
+      // Desktop fallback
       window.open(`fb-messenger://share/?link=${encodeURIComponent(shareData.url)}`, '_blank');
     }
   };
