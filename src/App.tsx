@@ -131,6 +131,7 @@ export default function App() {
   // Profile & Settings State
   const [playerName, setPlayerName] = useState<string>('');
   const [avatarSeed, setAvatarSeed] = useState<string>('');
+  const [unlockTimes, setUnlockTimes] = useState<Record<string, string>>({});
   const [showSettings, setShowSettings] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
@@ -175,6 +176,16 @@ export default function App() {
       setAvatarSeed(newAvatar);
       localStorage.setItem('wildmaps_avatar', newAvatar);
     }
+
+    // Load Unlock Times
+    const savedTimes = localStorage.getItem('wildmaps_unlock_times');
+    if (savedTimes) {
+      try {
+        setUnlockTimes(JSON.parse(savedTimes));
+      } catch (e) {
+        console.error('Failed to parse saved unlock times');
+      }
+    }
   }, []);
 
   // Save landmarks to local storage on change
@@ -196,6 +207,13 @@ export default function App() {
     }
   }, [avatarSeed]);
 
+  // Save unlock times to local storage on change
+  useEffect(() => {
+    if (Object.keys(unlockTimes).length > 0) {
+      localStorage.setItem('wildmaps_unlock_times', JSON.stringify(unlockTimes));
+    }
+  }, [unlockTimes]);
+
   const changeView = (newView: View) => {
     if (currentView !== newView) {
       playSubtleClick();
@@ -211,6 +229,12 @@ export default function App() {
     setUnlockedLandmarks(prev => {
       if (!prev.includes(id)) {
         return [...prev, id];
+      }
+      return prev;
+    });
+    setUnlockTimes(prev => {
+      if (!prev[id]) {
+        return { ...prev, [id]: new Date().toISOString() };
       }
       return prev;
     });
@@ -240,8 +264,10 @@ export default function App() {
   const handleReset = () => {
     playSubtleClick();
     setUnlockedLandmarks([]);
+    setUnlockTimes({});
     
     localStorage.setItem('wildmaps_unlocked', JSON.stringify([]));
+    localStorage.removeItem('wildmaps_unlock_times');
     localStorage.removeItem('wildmaps_onboarded');
     
     setShowSettings(false);
@@ -339,6 +365,7 @@ export default function App() {
             {currentView === 'profile' && (
               <BadgesView 
                 unlockedLandmarks={unlockedLandmarks}
+                unlockTimes={unlockTimes}
                 playerName={playerName}
                 setPlayerName={setPlayerName}
                 avatarSeed={avatarSeed}

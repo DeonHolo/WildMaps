@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { LandmarkId, LANDMARKS } from '../types';
-import { Award, Lock, CheckCircle2, Trophy, User, Edit2, Check, Star, X, RotateCcw, Share2, Copy } from 'lucide-react';
+import { Award, Lock, CheckCircle2, Trophy, User, Edit2, Check, Star, X, RotateCcw, Share2, Copy, Smartphone } from 'lucide-react';
 import { playSubtleClick, playModalOpen } from '../utils/audio';
 import {
   FacebookShareButton, FacebookIcon,
@@ -8,7 +8,6 @@ import {
   WhatsappShareButton, WhatsappIcon,
   TelegramShareButton, TelegramIcon,
   RedditShareButton, RedditIcon,
-  FacebookMessengerShareButton, FacebookMessengerIcon
 } from 'react-share';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -17,6 +16,7 @@ gsap.registerPlugin(useGSAP);
 
 interface BadgesViewProps {
   unlockedLandmarks: LandmarkId[];
+  unlockTimes: Record<string, string>;
   playerName: string;
   setPlayerName: (name: string) => void;
   avatarSeed: string;
@@ -248,6 +248,7 @@ function ShareModal({ shareData, onClose }: any) {
   const [copied, setCopied] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const supportsNativeShare = typeof navigator !== 'undefined' && !!navigator.share;
 
   useGSAP(() => {
     gsap.from(overlayRef.current, { opacity: 0, duration: 0.3 });
@@ -286,6 +287,19 @@ function ShareModal({ shareData, onClose }: any) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleNativeShare = async () => {
+    playSubtleClick();
+    try {
+      await navigator.share({
+        title: 'WildMaps',
+        text: shareData.text,
+        url: shareData.url,
+      });
+    } catch (err) {
+      // User cancelled or share failed — silently ignore
+    }
+  };
+
   return (
     <div ref={overlayRef} className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
       <div ref={containerRef} className="neo-brutalist-card bg-bg w-full max-w-sm flex flex-col relative shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
@@ -299,14 +313,22 @@ function ShareModal({ shareData, onClose }: any) {
           </button>
         </div>
         <div className="p-5 flex flex-col gap-4">
-          <p className="text-sm font-bold text-center text-ink uppercase">Choose how to share:</p>
+          {/* Native Share (mobile — lets user pick Messenger, SMS, etc.) */}
+          {supportsNativeShare && (
+            <button
+              onClick={handleNativeShare}
+              className="w-full neo-brutalist bg-gold hover:bg-gold-dark text-ink font-black uppercase py-3 flex items-center justify-center gap-2 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)]"
+            >
+              <Smartphone size={20} />
+              Share via Apps
+            </button>
+          )}
+
+          <p className="text-sm font-bold text-center text-ink uppercase">{supportsNativeShare ? 'Or share directly:' : 'Choose how to share:'}</p>
           <div className="flex gap-3 justify-center flex-wrap">
-            <FacebookShareButton url={shareData.url} hashtag="#WildMaps">
+            <FacebookShareButton url={shareData.url} hashtag="#WildMaps" quote={shareData.text}>
               <FacebookIcon size={40} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full" />
             </FacebookShareButton>
-            <FacebookMessengerShareButton url={shareData.url} appId="868352648419614">
-              <FacebookMessengerIcon size={40} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full" />
-            </FacebookMessengerShareButton>
             <TwitterShareButton url={shareData.url} title={shareData.text}>
               <TwitterIcon size={40} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full" />
             </TwitterShareButton>
@@ -333,7 +355,7 @@ function ShareModal({ shareData, onClose }: any) {
   );
 }
 
-export default function BadgesView({ unlockedLandmarks, playerName, setPlayerName, avatarSeed, setAvatarSeed }: BadgesViewProps) {
+export default function BadgesView({ unlockedLandmarks, unlockTimes, playerName, setPlayerName, avatarSeed, setAvatarSeed }: BadgesViewProps) {
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState(playerName);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
@@ -512,7 +534,9 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
                   
                   {isUnlocked && (
                     <div className="mt-3 inline-block bg-ink text-white text-xs font-mono px-2 py-1 uppercase">
-                      Badge Earned
+                      {unlockTimes[lm.id] 
+                        ? `Unlocked ${new Date(unlockTimes[lm.id]).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` 
+                        : 'Badge Earned'}
                     </div>
                   )}
                 </div>

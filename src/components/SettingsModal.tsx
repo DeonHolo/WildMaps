@@ -1,12 +1,11 @@
 import { useState, useRef } from 'react';
-import { X, ShieldAlert, RotateCcw, Phone, Info, HelpCircle, Share2, Copy, Check } from 'lucide-react';
+import { X, ShieldAlert, RotateCcw, Phone, Info, HelpCircle, Share2, Copy, Check, Smartphone } from 'lucide-react';
 import {
   FacebookShareButton, FacebookIcon,
   TwitterShareButton, TwitterIcon,
   WhatsappShareButton, WhatsappIcon,
   TelegramShareButton, TelegramIcon,
   RedditShareButton, RedditIcon,
-  FacebookMessengerShareButton, FacebookMessengerIcon
 } from 'react-share';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -24,6 +23,7 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
   const [confirmReset, setConfirmReset] = useState(false);
   const [showShareOptions, setShowShareOptions] = useState(false);
   const [copied, setCopied] = useState(false);
+  const supportsNativeShare = typeof navigator !== 'undefined' && !!navigator.share;
   
   const overlayRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -77,9 +77,22 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
     url: 'https://wildmaps.vercel.app/',
   };
 
-  const handleNativeShare = async () => {
+  const handleShowShareOptions = () => {
     playSubtleClick();
     setShowShareOptions(true);
+  };
+
+  const handleNativeShare = async () => {
+    playSubtleClick();
+    try {
+      await navigator.share({
+        title: 'WildMaps',
+        text: shareData.text,
+        url: shareData.url,
+      });
+    } catch (err) {
+      // User cancelled or share failed — silently ignore
+    }
   };
 
   const handleCopy = () => {
@@ -133,7 +146,7 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
             
             {!showShareOptions ? (
               <button 
-                onClick={handleNativeShare}
+                onClick={handleShowShareOptions}
                 className="w-full neo-brutalist bg-gold hover:bg-gold-dark text-ink font-black uppercase py-3 flex items-center justify-center gap-2 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)]"
               >
                 <Share2 size={20} />
@@ -147,13 +160,22 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
                     <X size={16} />
                   </button>
                 </div>
+
+                {/* Native Share (mobile — lets user pick Messenger, SMS, etc.) */}
+                {supportsNativeShare && (
+                  <button
+                    onClick={handleNativeShare}
+                    className="w-full neo-brutalist bg-gold hover:bg-gold-dark text-ink font-black uppercase py-2 flex items-center justify-center gap-2 transition-all hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)]"
+                  >
+                    <Smartphone size={18} />
+                    Share via Apps
+                  </button>
+                )}
+
                 <div className="flex gap-3 justify-center flex-wrap">
-                  <FacebookShareButton url={shareData.url} hashtag="#WildMaps">
+                  <FacebookShareButton url={shareData.url} hashtag="#WildMaps" quote={shareData.text}>
                     <FacebookIcon size={40} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full" />
                   </FacebookShareButton>
-                  <FacebookMessengerShareButton url={shareData.url} appId="868352648419614">
-                    <FacebookMessengerIcon size={40} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full" />
-                  </FacebookMessengerShareButton>
                   <TwitterShareButton url={shareData.url} title={shareData.text}>
                     <TwitterIcon size={40} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full" />
                   </TwitterShareButton>
