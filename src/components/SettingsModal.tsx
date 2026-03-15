@@ -65,9 +65,8 @@ function ShareModal({ shareData, onClose }: { shareData: any, onClose: () => voi
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'WildMaps',
-          text: shareData.text,
-          url: shareData.url
+          // Combine text and url into a single text block to prevent Messenger double-copy bug
+          text: `${shareData.text}\n\n${shareData.url}`
         });
       } catch (err) {
         console.error('Error sharing:', err);
