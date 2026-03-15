@@ -62,7 +62,9 @@ function ShareModal({ shareData, onClose }: { shareData: any, onClose: () => voi
 
   const handleMessengerShare = () => {
     playSubtleClick();
-    window.open(`fb-messenger://share/?link=${encodeURIComponent(shareData.url)}`, '_blank');
+    // Experimental: Adding &text and &quote parameters to see if Messenger parses them for pre-filled text
+    const messengerUrl = `fb-messenger://share/?link=${encodeURIComponent(shareData.url)}&text=${encodeURIComponent(shareData.text)}&quote=${encodeURIComponent(shareData.text)}`;
+    window.open(messengerUrl, '_blank');
   };
 
   const handleDownloadQR = () => {
