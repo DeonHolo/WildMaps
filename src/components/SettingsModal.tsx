@@ -29,7 +29,7 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
       try {
         await navigator.share({
           title: 'WildMaps',
-          text: `I'm exploring the CIT-U campus in WildMaps! Can you find all the landmarks?\nhttps://wildmaps.vercel.app/`
+          text: `🗺️ I'm exploring the CIT-U campus in WildMaps! Can you find all the landmarks?\n\n📍 https://wildmaps.vercel.app/`
         });
       } catch (err) {
         console.error('Error sharing:', err);
