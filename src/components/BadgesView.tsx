@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { LandmarkId, LANDMARKS } from '../types';
-import { Award, Lock, CheckCircle2, Trophy, User, Edit2, Check, Star, X, RotateCcw } from 'lucide-react';
+import { Award, Lock, CheckCircle2, Trophy, User, Edit2, Check, Star, X, RotateCcw, Share2 } from 'lucide-react';
+import { playSubtleClick, playModalOpen } from '../utils/audio';
 
 interface BadgesViewProps {
   unlockedLandmarks: LandmarkId[];
@@ -41,12 +42,60 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
   };
 
   const handleSaveName = () => {
+    playSubtleClick();
     if (tempName.trim()) {
       setPlayerName(tempName.trim());
     } else {
       setTempName(playerName); // revert if empty
     }
     setIsEditingName(false);
+  };
+
+  const handleShare = async () => {
+    playSubtleClick();
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'WildMaps Explorer',
+          text: `I'm a ${getRank(unlockedCount)} on WildMaps! I've unlocked ${unlockedCount}/${totalLandmarks} campus sectors. Can you beat my exploration progress?`,
+          url: window.location.href,
+        });
+      } catch (err) {
+        console.log('Error sharing:', err);
+      }
+    } else {
+      // Fallback if Web Share API is not supported
+      alert("Sharing is not supported on this browser, but you're doing great!");
+    }
+  };
+
+  const openAvatarModal = () => {
+    playModalOpen();
+    setTempAvatarSeed(avatarSeed);
+    setShowAvatarModal(true);
+  };
+
+  const closeAvatarModal = () => {
+    playSubtleClick();
+    setShowAvatarModal(false);
+  };
+
+  const saveAvatar = () => {
+    playSubtleClick();
+    setAvatarSeed(tempAvatarSeed);
+    setShowAvatarModal(false);
+  };
+
+  const selectPreset = (seed: string) => {
+    playSubtleClick();
+    setTempAvatarSeed(seed);
+  };
+
+  const generateRandom = () => {
+    playSubtleClick();
+    const randomColors = ['b6e3f4', 'c0aede', 'd1d4f9', 'ffd5dc', 'ffdfbf', 'c2e9c6', 'FFD700', 'ffb3ba', 'baffc9', 'bae1ff'];
+    const randomColor = randomColors[Math.floor(Math.random() * randomColors.length)];
+    setTempAvatarSeed(`random-${Math.floor(Math.random() * 100000)}&backgroundColor=${randomColor}`);
   };
 
   // Helper to ensure old seeds without background colors still get a default gold background
@@ -63,9 +112,17 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
         
         {/* Profile Section */}
         <div className="bg-white neo-brutalist-card p-5 mb-6 relative shrink-0">
+          <button 
+            onClick={handleShare}
+            className="absolute top-4 right-4 text-gray-400 hover:text-ink transition-colors z-20"
+            title="Share Progress"
+          >
+            <Share2 size={20} />
+          </button>
+          
           <div className="flex items-start gap-4 relative z-10">
             <button 
-              onClick={() => { setTempAvatarSeed(avatarSeed); setShowAvatarModal(true); }}
+              onClick={openAvatarModal}
               className="w-16 h-16 shrink-0 neo-brutalist bg-gold overflow-hidden relative group cursor-pointer"
             >
               <img 
@@ -106,9 +163,9 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
               )}
 
               <div className="mt-3">
-                <div className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-mono bg-maroon text-white px-2 py-1 border-2 border-ink font-bold uppercase whitespace-nowrap">
+                <div className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs md:text-sm font-mono bg-maroon text-white px-2 py-1 border-2 border-ink font-bold uppercase w-full sm:w-auto overflow-hidden">
                   <Star size={14} className="text-gold shrink-0" />
-                  Rank: {getRank(unlockedCount)}
+                  <span className="truncate">Rank: {getRank(unlockedCount)}</span>
                 </div>
               </div>
             </div>
@@ -198,7 +255,7 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
           <div className="neo-brutalist-card bg-bg w-full max-w-sm flex flex-col relative animate-in zoom-in-95 duration-200">
             <div className="bg-ink text-white p-3 flex justify-between items-center border-b-4 border-ink">
               <h3 className="font-bold uppercase tracking-tight text-lg">Customize Avatar</h3>
-              <button onClick={() => setShowAvatarModal(false)} className="hover:bg-white/20 p-1 rounded-none transition-colors">
+              <button onClick={closeAvatarModal} className="hover:bg-white/20 p-1 rounded-none transition-colors">
                 <X size={20} />
               </button>
             </div>
@@ -219,7 +276,7 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
                   {PRESET_AVATARS.map(seed => (
                     <button 
                       key={seed}
-                      onClick={() => setTempAvatarSeed(seed)}
+                      onClick={() => selectPreset(seed)}
                       className={`aspect-square neo-brutalist overflow-hidden ${tempAvatarSeed === seed ? 'border-4 border-maroon' : 'border-2 border-ink'}`}
                     >
                       <img 
@@ -233,11 +290,7 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
               </div>
 
               <button 
-                onClick={() => {
-                  const randomColors = ['b6e3f4', 'c0aede', 'd1d4f9', 'ffd5dc', 'ffdfbf', 'c2e9c6', 'FFD700', 'ffb3ba', 'baffc9', 'bae1ff'];
-                  const randomColor = randomColors[Math.floor(Math.random() * randomColors.length)];
-                  setTempAvatarSeed(`random-${Math.floor(Math.random() * 100000)}&backgroundColor=${randomColor}`);
-                }}
+                onClick={generateRandom}
                 className="w-full neo-brutalist bg-white hover:bg-gray-100 text-ink font-bold uppercase py-2 flex items-center justify-center gap-2 transition-colors"
               >
                 <RotateCcw size={16} />
@@ -245,10 +298,7 @@ export default function BadgesView({ unlockedLandmarks, playerName, setPlayerNam
               </button>
 
               <button 
-                onClick={() => {
-                  setAvatarSeed(tempAvatarSeed);
-                  setShowAvatarModal(false);
-                }}
+                onClick={saveAvatar}
                 className="w-full neo-brutalist bg-gold hover:bg-gold-dark text-ink font-bold uppercase py-3 transition-colors mt-2"
               >
                 Save Avatar

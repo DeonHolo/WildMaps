@@ -9,6 +9,7 @@ import ScanView from './components/ScanView';
 import BadgesView from './components/BadgesView';
 import SettingsModal from './components/SettingsModal';
 import OnboardingModal from './components/OnboardingModal';
+import { playSubtleClick, playModalOpen, playSuccessChime } from './utils/audio';
 
 type View = 'map' | 'scan' | 'profile';
 
@@ -91,6 +92,10 @@ export default function App() {
   }, [avatarSeed]);
 
   const changeView = (newView: View) => {
+    if (currentView !== newView) {
+      if ('vibrate' in navigator) navigator.vibrate(10); // subtle click
+      playSubtleClick();
+    }
     const views: View[] = ['map', 'scan', 'profile'];
     const currentIndex = views.indexOf(currentView);
     const newIndex = views.indexOf(newView);
@@ -107,22 +112,29 @@ export default function App() {
     });
     setJustUnlocked(id);
     setShowAchievementModal(id);
+    playSuccessChime();
     changeView('map');
   };
 
   const closeAchievementModal = () => {
+    playSubtleClick();
     setShowAchievementModal(null);
     if (unlockedLandmarks.length === 3) {
-      setTimeout(() => setShowAllUnlockedModal(true), 500);
+      setTimeout(() => {
+        setShowAllUnlockedModal(true);
+        playSuccessChime();
+      }, 500);
     }
   };
 
   const startScan = (id: LandmarkId) => {
+    playSubtleClick();
     setTargetLandmark(id);
     changeView('scan');
   };
 
   const handleReset = () => {
+    playSubtleClick();
     setUnlockedLandmarks([]);
     
     localStorage.setItem('wildmaps_unlocked', JSON.stringify([]));
@@ -134,8 +146,14 @@ export default function App() {
   };
 
   const completeOnboarding = () => {
+    playSubtleClick();
     setShowOnboarding(false);
     localStorage.setItem('wildmaps_onboarded', 'true');
+  };
+
+  const openSettings = () => {
+    playModalOpen();
+    setShowSettings(true);
   };
 
   const views: View[] = ['map', 'scan', 'profile'];
@@ -164,11 +182,16 @@ export default function App() {
       <header className="bg-maroon text-bg p-4 border-b-4 border-ink flex justify-between items-center z-10">
         <h1 className="text-2xl font-bold uppercase tracking-tighter">WildMaps</h1>
         <div className="flex items-center gap-3">
-          <div className="font-mono text-sm bg-gold text-ink px-2 py-1 border-2 border-ink font-bold whitespace-nowrap shrink-0">
+          <motion.div 
+            key={unlockedLandmarks.length}
+            animate={{ scale: [1.3, 1], rotate: [-5, 0] }}
+            transition={{ duration: 0.4, type: 'spring', bounce: 0.5 }}
+            className="font-mono text-sm bg-gold text-ink px-2 py-1 border-2 border-ink font-bold whitespace-nowrap shrink-0 origin-right"
+          >
             {unlockedLandmarks.length}/3 FOUND
-          </div>
+          </motion.div>
           <button 
-            onClick={() => setShowSettings(true)}
+            onClick={openSettings}
             className="p-1 hover:bg-white/20 transition-colors shrink-0"
           >
             <Settings size={24} />

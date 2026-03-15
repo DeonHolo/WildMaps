@@ -5,6 +5,7 @@ export interface Landmark {
   name: string;
   description: string;
   hint: string;
+  shortHint: string;
   imageUrl: string;
   x: number; // Map coordinates (percentage)
   y: number;
@@ -17,6 +18,7 @@ export const LANDMARKS: Record<LandmarkId, Landmark> = {
     name: 'Wildcats Café',
     description: 'The main dining area for students to relax and grab a bite.',
     hint: "Follow the delicious aroma of food and the lively chatter of students taking a break!",
+    shortHint: "FOOD",
     imageUrl: 'https://picsum.photos/seed/cafe/400/200',
     x: 65,
     y: 20,
@@ -27,6 +29,7 @@ export const LANDMARKS: Record<LandmarkId, Landmark> = {
     name: 'College Library',
     description: 'The main hub for research, studying, and academic resources.',
     hint: "Look for the building with the vast collection of books and study areas!",
+    shortHint: "READ",
     imageUrl: 'https://picsum.photos/seed/library/400/200',
     x: 20,
     y: 50,
@@ -37,6 +40,7 @@ export const LANDMARKS: Record<LandmarkId, Landmark> = {
     name: 'CIT-U Logo Monument',
     description: 'The iconic symbol of the university featuring the school colors and logo.',
     hint: "Find the giant letters and the statue near the front of the campus!",
+    shortHint: "LOGO",
     imageUrl: 'https://picsum.photos/seed/statue/400/200',
     x: 80,
     y: 80,

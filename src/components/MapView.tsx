@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { LandmarkId, LANDMARKS } from '../types';
 import { MapPin, Lock, Unlock, X, Camera } from 'lucide-react';
+import { playModalOpen, playSubtleClick } from '../utils/audio';
 
 interface MapViewProps {
   unlockedLandmarks: LandmarkId[];
@@ -20,14 +21,21 @@ export default function MapView({ unlockedLandmarks, justUnlocked, onSelectLandm
   const [activeHint, setActiveHint] = useState<LandmarkId | null>(null);
 
   const handleNodeClick = (id: LandmarkId) => {
+    playModalOpen();
     setActiveHint(id);
   };
 
   const handleProceedToScan = () => {
     if (activeHint) {
+      playSubtleClick();
       onSelectLandmark(activeHint);
       setActiveHint(null);
     }
+  };
+
+  const closeHint = () => {
+    playSubtleClick();
+    setActiveHint(null);
   };
 
   return (
@@ -112,13 +120,17 @@ export default function MapView({ unlockedLandmarks, justUnlocked, onSelectLandm
                   className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20 group"
                   style={{ left: `${lm.x}%`, top: `${lm.y}%` }}
                 >
-                  <div className={`
-                    w-12 h-12 rounded-full flex items-center justify-center neo-brutalist
-                    ${isUnlocked ? 'bg-gold text-ink' : 'bg-gray-800 text-white'}
-                    group-hover:scale-110 transition-transform
-                  `}>
+                  <motion.div 
+                    animate={!isUnlocked ? { scale: [1, 1.1, 1] } : {}}
+                    transition={!isUnlocked ? { repeat: Infinity, duration: 2, ease: "easeInOut" } : {}}
+                    className={`
+                      w-12 h-12 rounded-full flex items-center justify-center neo-brutalist
+                      ${isUnlocked ? 'bg-gold text-ink' : 'bg-maroon text-white shadow-[0_0_15px_rgba(128,0,0,0.6)]'}
+                      group-hover:scale-110 transition-transform
+                    `}
+                  >
                     {isUnlocked ? <Unlock size={20} /> : <Lock size={20} />}
-                  </div>
+                  </motion.div>
                   <div className={`
                     mt-2 px-2 py-1 text-xs font-bold uppercase neo-brutalist text-center
                     ${isUnlocked ? 'bg-white text-ink max-w-[140px]' : 'bg-gray-800 text-white whitespace-nowrap'}
@@ -141,7 +153,7 @@ export default function MapView({ unlockedLandmarks, justUnlocked, onSelectLandm
               <h3 className="font-bold uppercase tracking-tight text-lg">
                 {unlockedLandmarks.includes(activeHint) ? 'Sector Unlocked' : 'Quest Node'}
               </h3>
-              <button onClick={() => setActiveHint(null)} className="hover:bg-white/20 p-1 rounded-none transition-colors">
+              <button onClick={closeHint} className="hover:bg-white/20 p-1 rounded-none transition-colors">
                 <X size={20} />
               </button>
             </div>
@@ -200,7 +212,7 @@ export default function MapView({ unlockedLandmarks, justUnlocked, onSelectLandm
                 </button>
               ) : (
                 <button 
-                  onClick={() => setActiveHint(null)}
+                  onClick={closeHint}
                   className="w-full neo-brutalist bg-gray-200 hover:bg-gray-300 text-ink font-bold uppercase py-3 transition-colors"
                 >
                   Close

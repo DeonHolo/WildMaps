@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import * as tf from '@tensorflow/tfjs';
 import * as mobilenet from '@tensorflow-models/mobilenet';
-import { Camera, X, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { Camera, X, CheckCircle2, AlertCircle, Loader2, ScanLine, Flashlight, FlashlightOff } from 'lucide-react';
+import { motion } from 'motion/react';
 import { LandmarkId, LANDMARKS } from '../types';
+import { playScanComplete, playSubtleClick } from '../utils/audio';
 
 interface ScanViewProps {
   targetId: LandmarkId | null;
@@ -13,10 +15,12 @@ interface ScanViewProps {
 export default function ScanView({ targetId, onUnlock, onCancel }: ScanViewProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [model, setModel] = useState<mobilenet.MobileNet | null>(null);
-  const [isScanning, setIsScanning] = useState(false);
+  const [isVideoReady, setIsVideoReady] = useState(false);
   const [scanResult, setScanResult] = useState<{ className: string; probability: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [isTorchOn, setIsTorchOn] = useState(false);
+  const [torchSupported, setTorchSupported] = useState(false);
 
   const target = targetId ? LANDMARKS[targetId] : null;
 
@@ -44,12 +48,20 @@ export default function ScanView({ targetId, onUnlock, onCancel }: ScanViewProps
         stream = await navigator.mediaDevices.getUserMedia({ 
           video: { facingMode: 'environment' } 
         });
+        
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
+        
+        // Check for torch support
+        const track = stream.getVideoTracks()[0];
+        const capabilities = track.getCapabilities() as any;
+        if (capabilities.torch) {
+          setTorchSupported(true);
+        }
       } catch (err) {
         console.error('Error accessing camera', err);
-        setError('Camera access denied or unavailable.');
+        setError('Camera access denied. Please allow camera permissions in your browser settings and reload.');
       }
     };
     
@@ -62,51 +74,70 @@ export default function ScanView({ targetId, onUnlock, onCancel }: ScanViewProps
     };
   }, []);
 
-  const handleScan = async () => {
-    if (!model || !videoRef.current || !targetId) return;
+  // Toggle Torch
+  const toggleTorch = async () => {
+    if (!videoRef.current) return;
+    const stream = videoRef.current.srcObject as MediaStream;
+    if (!stream) return;
     
-    setIsScanning(true);
-    setScanResult(null);
-    setError(null);
-    
+    const track = stream.getVideoTracks()[0];
     try {
-      // Small delay to simulate processing
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      const predictions = await model.classify(videoRef.current);
-      
-      if (predictions && predictions.length > 0) {
-        const topPrediction = predictions[0];
-        setScanResult(topPrediction);
-        
-        // In a real app, we would check if topPrediction.className matches the landmark.
-        // For this prototype, we'll accept any prediction with > 0.1 confidence
-        // or just simulate success to allow the user to progress.
-        if (topPrediction.probability > 0.1) {
-          setSuccess(true);
-          setTimeout(() => {
-            onUnlock(targetId);
-          }, 2000);
-        } else {
-          setError('Landmark not recognized. Try getting closer or improving lighting.');
-        }
-      }
+      await track.applyConstraints({
+        advanced: [{ torch: !isTorchOn }]
+      } as any);
+      setIsTorchOn(!isTorchOn);
+      playSubtleClick();
     } catch (err) {
-      console.error('Scan failed', err);
-      setError('Scan failed. Please try again.');
-    } finally {
-      setIsScanning(false);
+      console.error('Failed to toggle torch', err);
     }
   };
+
+  // Continuous Scan Effect
+  useEffect(() => {
+    if (!model || !isVideoReady || success || !targetId) return;
+
+    const interval = setInterval(async () => {
+      if (!videoRef.current) return;
+      try {
+        const predictions = await model.classify(videoRef.current);
+        if (predictions && predictions.length > 0) {
+          const topPrediction = predictions[0];
+          setScanResult(topPrediction);
+          
+          if (topPrediction.probability > 0.1) {
+            // Success!
+            if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
+            playScanComplete();
+            setSuccess(true);
+            clearInterval(interval);
+            setTimeout(() => {
+              onUnlock(targetId);
+            }, 2000);
+          }
+        }
+      } catch (err) {
+        console.error('Scan error:', err);
+      }
+    }, 1000); // Scan every 1 second
+
+    return () => clearInterval(interval);
+  }, [model, isVideoReady, success, targetId, onUnlock]);
 
   // Debug unlock for testing
   const handleDebugUnlock = () => {
     if (targetId) {
+      if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
+      playScanComplete();
       setSuccess(true);
       setTimeout(() => {
         onUnlock(targetId);
       }, 1000);
     }
+  };
+
+  const handleCancel = () => {
+    playSubtleClick();
+    onCancel();
   };
 
   if (!target) {
@@ -117,7 +148,7 @@ export default function ScanView({ targetId, onUnlock, onCancel }: ScanViewProps
           <h2 className="text-xl font-bold uppercase mb-2">No Target Selected</h2>
           <p className="mb-6">Please select a locked sector from the map first.</p>
           <button 
-            onClick={onCancel}
+            onClick={handleCancel}
             className="neo-brutalist bg-gold text-ink px-6 py-3 font-bold uppercase w-full"
           >
             Return to Map
@@ -133,9 +164,11 @@ export default function ScanView({ targetId, onUnlock, onCancel }: ScanViewProps
       <div className="bg-gold text-ink p-4 flex justify-between items-center z-10 border-b-4 border-ink">
         <div>
           <h2 className="text-sm font-mono uppercase opacity-80">Current Target</h2>
-          <p className="font-bold text-lg">{target.name}</p>
+          <p className="font-bold text-lg">
+            {success ? target.name : `??? (${target.shortHint})`}
+          </p>
         </div>
-        <button onClick={onCancel} className="p-2 hover:bg-white/20 rounded-full transition-colors">
+        <button onClick={handleCancel} className="p-2 hover:bg-white/20 rounded-full transition-colors">
           <X size={24} />
         </button>
       </div>
@@ -147,17 +180,43 @@ export default function ScanView({ targetId, onUnlock, onCancel }: ScanViewProps
           autoPlay 
           playsInline 
           muted 
+          onCanPlay={() => setIsVideoReady(true)}
           className="absolute inset-0 w-full h-full object-cover opacity-80"
         />
         
+        {/* Torch Toggle Button */}
+        {torchSupported && (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={toggleTorch}
+            className={`absolute bottom-6 right-6 z-30 p-4 rounded-full border-2 neo-brutalist transition-all duration-300 ${
+              isTorchOn 
+                ? 'bg-gold text-ink border-ink shadow-[0_0_20px_rgba(255,215,0,0.8)]' 
+                : 'bg-ink/80 text-white border-white/50 backdrop-blur-sm'
+            }`}
+          >
+            {isTorchOn ? <Flashlight size={28} /> : <FlashlightOff size={28} />}
+          </motion.button>
+        )}
+        
         {/* Viewfinder Overlay */}
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-          <div className={`w-64 h-64 border-4 ${success ? 'border-green-500' : 'border-gold'} relative transition-colors duration-300`}>
+          <div className={`w-64 h-64 border-4 ${success ? 'border-green-500' : 'border-gold'} relative transition-colors duration-300 overflow-hidden`}>
             {/* Corner accents */}
-            <div className="absolute -top-1 -left-1 w-4 h-4 bg-gold"></div>
-            <div className="absolute -top-1 -right-1 w-4 h-4 bg-gold"></div>
-            <div className="absolute -bottom-1 -left-1 w-4 h-4 bg-gold"></div>
-            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-gold"></div>
+            <div className={`absolute -top-1 -left-1 w-4 h-4 ${success ? 'bg-green-500' : 'bg-gold'} transition-colors duration-300`}></div>
+            <div className={`absolute -top-1 -right-1 w-4 h-4 ${success ? 'bg-green-500' : 'bg-gold'} transition-colors duration-300`}></div>
+            <div className={`absolute -bottom-1 -left-1 w-4 h-4 ${success ? 'bg-green-500' : 'bg-gold'} transition-colors duration-300`}></div>
+            <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${success ? 'bg-green-500' : 'bg-gold'} transition-colors duration-300`}></div>
+            
+            {/* Scanning Line */}
+            {!success && isVideoReady && model && (
+              <motion.div 
+                className="absolute left-0 right-0 h-1 bg-gold/50 shadow-[0_0_15px_rgba(255,215,0,0.8)]"
+                animate={{ top: ['0%', '100%', '0%'] }}
+                transition={{ repeat: Infinity, duration: 2.5, ease: "linear" }}
+              />
+            )}
           </div>
         </div>
 
@@ -187,34 +246,37 @@ export default function ScanView({ targetId, onUnlock, onCancel }: ScanViewProps
           </div>
         )}
         
-        {scanResult && !success && (
-          <div className="bg-white border-2 border-ink p-3 mb-4 text-sm font-mono">
-            <p className="opacity-60 text-xs uppercase mb-1">AI Analysis:</p>
-            <p className="font-bold truncate">{scanResult.className}</p>
-            <p className="text-xs mt-1">Confidence: {(scanResult.probability * 100).toFixed(1)}%</p>
+        <div className="bg-white border-2 border-ink p-3 mb-4 text-sm font-mono flex justify-between items-center">
+          <div className="overflow-hidden pr-2">
+            <p className="opacity-60 text-[10px] uppercase mb-1">Live Analysis:</p>
+            <p className="font-bold truncate text-xs">
+              {scanResult ? scanResult.className : 'Waiting for camera...'}
+            </p>
           </div>
-        )}
+          {scanResult && (
+            <div className="text-right shrink-0">
+              <p className="opacity-60 text-[10px] uppercase mb-1">Match</p>
+              <p className="font-bold text-xs">{(scanResult.probability * 100).toFixed(1)}%</p>
+            </div>
+          )}
+        </div>
 
-        <button 
-          onClick={handleScan}
-          disabled={!model || isScanning || success}
-          className={`
-            w-full py-4 flex items-center justify-center neo-brutalist font-bold uppercase text-lg
-            ${(!model || isScanning || success) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gold text-ink hover:bg-gold-dark'}
-          `}
-        >
-          {isScanning ? (
+        <div className={`
+          w-full py-4 flex items-center justify-center neo-brutalist font-bold uppercase text-lg
+          ${success ? 'bg-green-500 text-white' : 'bg-gold text-ink'}
+        `}>
+          {success ? (
             <>
-              <Loader2 size={24} className="animate-spin mr-2" />
-              Analyzing...
+              <CheckCircle2 size={24} className="mr-2" />
+              Verified
             </>
           ) : (
             <>
-              <Camera size={24} className="mr-2" />
-              Scan Landmark
+              <ScanLine size={24} className="mr-2 animate-pulse" />
+              Auto-Scanning...
             </>
           )}
-        </button>
+        </div>
 
         {/* Debug button for easy testing without a real camera/model match */}
         <button 

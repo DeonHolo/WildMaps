@@ -28,7 +28,7 @@ export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
 
   return (
     <div className="absolute inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 animate-in fade-in duration-300">
-      <div className="neo-brutalist-card bg-bg w-full max-w-sm flex flex-col relative animate-in zoom-in-95 duration-300">
+      <div className="neo-brutalist-card bg-bg w-full max-w-sm flex flex-col relative animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
         
         {/* Progress Dots */}
         <div className="absolute top-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
@@ -49,7 +49,7 @@ export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
         </button>
 
         {/* Content */}
-        <div className="p-6 pt-12 flex flex-col items-center text-center">
+        <div className="p-4 sm:p-6 pt-10 sm:pt-12 flex flex-col items-center text-center">
           <AnimatePresence mode="wait">
             <motion.div 
               key={currentStep}
@@ -60,7 +60,7 @@ export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
               className="w-full flex flex-col items-center"
             >
               <motion.div 
-                className="w-full aspect-video neo-brutalist bg-white mb-6 overflow-hidden"
+                className="w-full aspect-video neo-brutalist bg-white mb-4 sm:mb-6 overflow-hidden"
                 animate={currentStep === 0 ? { y: [0, -6, 0] } : {}}
                 transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
               >
@@ -72,21 +72,21 @@ export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
                 />
               </motion.div>
 
-              <h2 className="text-2xl font-bold uppercase mb-3 tracking-tighter leading-none">
+              <h2 className="text-xl sm:text-2xl font-bold uppercase mb-2 sm:mb-3 tracking-tighter leading-none">
                 {step.title}
               </h2>
               
-              <p className="text-sm text-gray-600 font-medium leading-relaxed mb-8 min-h-[4.5rem]">
+              <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed mb-6 sm:mb-8 min-h-[4.5rem]">
                 {step.description}
               </p>
             </motion.div>
           </AnimatePresence>
 
-          <div className="w-full flex gap-3">
+          <div className="w-full flex gap-2 sm:gap-3 mt-auto">
             {currentStep > 0 && (
               <button 
                 onClick={handleBack}
-                className="neo-brutalist bg-white p-3 hover:bg-gray-100 transition-colors"
+                className="neo-brutalist bg-white p-2 sm:p-3 hover:bg-gray-100 transition-colors flex items-center justify-center shrink-0"
               >
                 <ChevronLeft size={24} />
               </button>
@@ -94,7 +94,7 @@ export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
             
             <button 
               onClick={handleNext}
-              className="flex-1 neo-brutalist bg-gold hover:bg-gold-dark text-ink font-bold uppercase py-3 flex items-center justify-center gap-2 transition-colors"
+              className="flex-1 neo-brutalist bg-gold hover:bg-gold-dark text-ink font-bold uppercase py-2 sm:py-3 flex items-center justify-center gap-2 transition-colors text-sm sm:text-base"
             >
               {step.buttonText}
               {!isLastStep && <ChevronRight size={20} />}
@@ -103,7 +103,7 @@ export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
         </div>
 
         {/* Footer Info */}
-        <div className="bg-ink text-white/50 text-[10px] uppercase font-mono p-2 text-center">
+        <div className="bg-ink text-white/50 text-[10px] uppercase font-mono p-2 text-center mt-auto">
           WildMaps Orientation Protocol v1.0
         </div>
       </div>
