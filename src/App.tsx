@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Map, Camera, UserCircle, Settings } from 'lucide-react';
+import { Map, Camera, UserCircle, Settings, Trophy, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
@@ -16,6 +16,9 @@ import { useGSAP } from '@gsap/react';
 gsap.registerPlugin(useGSAP);
 
 type View = 'map' | 'scan' | 'profile';
+type ChangeViewOptions = {
+  playSound?: boolean;
+};
 
 function AchievementModal({ landmark, onClose, width, height }: any) {
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -63,14 +66,14 @@ function AchievementModal({ landmark, onClose, width, height }: any) {
   );
 }
 
-function MapClearedModal({ onClose, width, height }: any) {
+function MapClearedModal({ onClose, width, height, playerName, totalLandmarks }: any) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const characterRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
     gsap.from(overlayRef.current, { opacity: 0, duration: 0.3 });
-    gsap.from(containerRef.current, { 
+    gsap.from(containerRef.current, {
       y: 60, 
       opacity: 0, 
       scale: 0.85, 
@@ -80,7 +83,7 @@ function MapClearedModal({ onClose, width, height }: any) {
     });
     
     gsap.to(characterRef.current, {
-      y: -8,
+      y: -6,
       duration: 1.5,
       yoyo: true,
       repeat: -1,
@@ -96,23 +99,64 @@ function MapClearedModal({ onClose, width, height }: any) {
 
   return (
     <div ref={overlayRef} className="absolute inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-      <Confetti width={width} height={height} recycle={true} numberOfPieces={200} gravity={0.5} initialVelocityY={30} />
-      <div ref={containerRef} className="neo-brutalist-card bg-bg w-full max-w-sm flex flex-col relative text-center p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-        <div className="mb-4">
-          <h2 className="inline-block text-3xl font-black uppercase text-ink bg-gold px-4 py-2 border-4 border-ink shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -rotate-2 transform">
-            Map Cleared!
-          </h2>
+      <Confetti width={width} height={height} recycle={true} numberOfPieces={280} gravity={0.45} initialVelocityY={32} />
+      <div ref={containerRef} className="neo-brutalist-card bg-bg w-full max-w-sm flex flex-col relative shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-h-[90vh] overflow-hidden">
+        {/* Header with close button */}
+        <div className="bg-gold text-ink p-3 flex justify-between items-center border-b-4 border-ink shrink-0">
+          <h3 className="font-bold uppercase tracking-tight text-lg flex items-center gap-2">
+            <Trophy size={18} />
+            Mission Complete
+          </h3>
+          <button onClick={handleClose} className="hover:bg-black/10 p-1 transition-colors hover:rotate-90 duration-300">
+            <X size={20} />
+          </button>
         </div>
-        <p className="text-gray-800 font-bold mb-6 text-lg">You've found all the landmarks and cleared the fog of war. You are a Grandmaster Guide!</p>
-        <div ref={characterRef} className="w-full h-40 mx-auto mb-6 neo-brutalist bg-gold flex items-center justify-center overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-          <img src="https://api.dicebear.com/9.x/bottts/svg?seed=Guide&backgroundColor=FFD700" alt="Guide" className="w-full h-full object-cover" />
+
+        <div className="p-5 flex flex-col gap-4 overflow-y-auto text-center">
+          <div>
+            <h2 className="inline-block text-3xl font-black uppercase text-ink bg-gold px-4 py-2 border-4 border-ink shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -rotate-2 transform">
+              Campus Cleared!
+            </h2>
+          </div>
+
+          <p className="text-gray-800 font-bold text-base leading-snug">
+            <span className="bg-gold/50 px-1.5 py-0.5">{playerName}</span> uncovered every hidden sector and lifted the fog of war.
+            You are now the campus <span className="text-maroon">Grandmaster Guide</span>.
+          </p>
+
+          <div className="grid grid-cols-3 gap-2 text-left">
+            <div className="neo-brutalist bg-white p-2.5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+              <p className="text-[10px] font-mono uppercase text-gray-500 mb-1">Progress</p>
+              <p className="text-lg font-black text-maroon">100%</p>
+            </div>
+            <div className="neo-brutalist bg-white p-2.5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+              <p className="text-[10px] font-mono uppercase text-gray-500 mb-1">Unlocked</p>
+              <p className="text-lg font-black text-maroon">{totalLandmarks}/{totalLandmarks}</p>
+            </div>
+            <div className="neo-brutalist bg-white p-2.5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+              <p className="text-[10px] font-mono uppercase text-gray-500 mb-1">Rank</p>
+              <p className="text-[10px] font-black uppercase leading-tight text-maroon">Grandmaster Guide</p>
+            </div>
+          </div>
+
+          <div
+            ref={characterRef}
+            className="w-full aspect-video neo-brutalist bg-white overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+          >
+            <img src="https://api.dicebear.com/9.x/bottts/svg?seed=Guide&backgroundColor=FFD700" alt="Guide" className="w-full h-full object-cover" />
+          </div>
+
+          <p className="text-sm font-bold text-ink leading-relaxed text-left">
+            Every landmark is now unlocked, every badge is claimed, and the full campus map is yours to explore without limits.
+          </p>
+
+          <button 
+            onClick={handleClose}
+            className="w-full neo-brutalist bg-gold hover:bg-gold-dark text-ink font-black uppercase py-3 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] text-lg"
+          >
+            View Full Map
+          </button>
         </div>
-        <button 
-          onClick={handleClose}
-          className="w-full neo-brutalist bg-gold hover:bg-gold-dark text-ink font-black uppercase py-3 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] text-xl"
-        >
-          View Full Map
-        </button>
       </div>
     </div>
   );
@@ -134,6 +178,7 @@ export default function App() {
   const [unlockTimes, setUnlockTimes] = useState<Record<string, string>>({});
   const [showSettings, setShowSettings] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const totalLandmarks = Object.keys(LANDMARKS).length;
 
   // Load from local storage on mount
   useEffect(() => {
@@ -214,8 +259,10 @@ export default function App() {
     }
   }, [unlockTimes]);
 
-  const changeView = (newView: View) => {
-    if (currentView !== newView) {
+  const changeView = (newView: View, options: ChangeViewOptions = {}) => {
+    const { playSound = true } = options;
+
+    if (playSound && currentView !== newView) {
       playSubtleClick();
     }
     const views: View[] = ['map', 'scan', 'profile'];
@@ -242,13 +289,12 @@ export default function App() {
     setShowAchievementModal(id);
     playSuccessChime();
     setTargetLandmark(null);
-    changeView('map');
+    changeView('map', { playSound: false });
   };
 
   const closeAchievementModal = () => {
-    playSubtleClick();
     setShowAchievementModal(null);
-    if (unlockedLandmarks.length === 3) {
+    if (unlockedLandmarks.length === totalLandmarks) {
       setTimeout(() => {
         setShowAllUnlockedModal(true);
         playGrandSuccessChime();
@@ -257,9 +303,8 @@ export default function App() {
   };
 
   const startScan = (id: LandmarkId) => {
-    playSubtleClick();
     setTargetLandmark(id);
-    changeView('scan');
+    changeView('scan', { playSound: false });
   };
 
   const handleReset = () => {
@@ -277,7 +322,6 @@ export default function App() {
   };
 
   const completeOnboarding = () => {
-    playSubtleClick();
     setShowOnboarding(false);
     localStorage.setItem('wildmaps_onboarded', 'true');
   };
@@ -322,7 +366,7 @@ export default function App() {
             className="font-mono text-sm bg-gold text-ink px-2 py-1 border-2 border-ink font-bold whitespace-nowrap shrink-0 origin-right cursor-pointer hover:bg-yellow-300"
             title="View Profile & Badges"
           >
-            {unlockedLandmarks.length}/3 FOUND
+            {unlockedLandmarks.length}/{totalLandmarks} FOUND
           </motion.button>
           <button 
             onClick={openSettings}
@@ -363,7 +407,7 @@ export default function App() {
                 onUnlock={handleUnlock} 
                 onCancel={() => {
                   setTargetLandmark(null);
-                  changeView('map');
+                  changeView('map', { playSound: false });
                 }} 
               />
             )}
@@ -422,6 +466,8 @@ export default function App() {
       {showAllUnlockedModal && (
         <MapClearedModal 
           onClose={() => setShowAllUnlockedModal(false)} 
+          playerName={playerName}
+          totalLandmarks={totalLandmarks}
           width={width} 
           height={height} 
         />

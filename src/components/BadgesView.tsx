@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react';
 import { LandmarkId, LANDMARKS } from '../types';
-import { Award, Lock, CheckCircle2, Trophy, User, Edit2, Check, Star, X, RotateCcw, Copy } from 'lucide-react';
-import { playSubtleClick, playModalOpen } from '../utils/audio';
+import { Award, Lock, CheckCircle2, Trophy, User, Edit2, Check, Star, X, RotateCcw, Copy, Sparkles } from 'lucide-react';
+import { playSubtleClick, playModalOpen, playCopySound } from '../utils/audio';
+import { motion } from 'framer-motion';
 
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -239,12 +240,140 @@ function AvatarModal({ avatarSeed, setAvatarSeed, onClose }: any) {
 }
 
 
+function BadgeDetailModal({ landmark, unlockTime, onClose }: { landmark: typeof LANDMARKS[keyof typeof LANDMARKS], unlockTime?: string, onClose: () => void }) {
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    gsap.from(overlayRef.current, { opacity: 0, duration: 0.3 });
+    gsap.from(containerRef.current, {
+      y: 60,
+      opacity: 0,
+      scale: 0.9,
+      rotation: -2,
+      duration: 0.5,
+      ease: 'back.out(1.5)'
+    });
+  }, []);
+
+  const handleClose = () => {
+    playSubtleClick();
+    gsap.to(containerRef.current, {
+      y: 40,
+      opacity: 0,
+      scale: 0.95,
+      rotation: 2,
+      duration: 0.25,
+      ease: 'power2.in'
+    });
+    gsap.to(overlayRef.current, {
+      opacity: 0,
+      duration: 0.25,
+      ease: 'power2.in',
+      onComplete: onClose
+    });
+  };
+
+  return (
+    <div ref={overlayRef} className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+      <div ref={containerRef} className="neo-brutalist-card bg-bg w-full max-w-sm flex flex-col relative shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+        {/* Header */}
+        <div className="bg-gold text-ink p-3 flex justify-between items-center border-b-4 border-ink">
+          <h3 className="font-bold uppercase tracking-tight text-lg flex items-center gap-2">
+            <Award size={18} />
+            {landmark.name}
+          </h3>
+          <button onClick={handleClose} className="hover:bg-black/10 p-1 transition-colors hover:rotate-90 duration-300">
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-4 flex flex-col gap-4 bg-white">
+          {/* Image */}
+          <motion.div 
+            className="neo-brutalist overflow-hidden bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <img 
+              src={landmark.imageUrl} 
+              alt={landmark.name} 
+              className="w-full h-36 object-cover"
+              referrerPolicy="no-referrer"
+            />
+          </motion.div>
+
+          {/* Description */}
+          <motion.div
+            initial={{ opacity: 0, x: -15 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <p className="text-sm text-ink leading-relaxed">{landmark.description}</p>
+          </motion.div>
+
+          {/* Fun Fact */}
+          <motion.div 
+            className="neo-brutalist bg-gold p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+            initial={{ opacity: 0, x: 15 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <div className="flex items-center gap-1.5 mb-2">
+              <Sparkles size={14} className="text-maroon" />
+              <p className="text-[10px] font-bold uppercase text-ink tracking-widest">Fun Fact</p>
+            </div>
+            <p className="text-xs text-ink leading-relaxed font-bold">{landmark.funFact}</p>
+          </motion.div>
+
+          {/* Unlock Time */}
+          {unlockTime && (
+            <motion.div 
+              className="neo-brutalist bg-white p-3 flex items-center gap-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <div className="w-8 h-8 shrink-0 bg-green-400 border-2 border-ink flex items-center justify-center">
+                <CheckCircle2 size={16} className="text-ink" />
+              </div>
+              <div>
+                <p className="text-[10px] font-mono uppercase text-gray-500">Unlocked</p>
+                <p className="text-sm font-black text-ink uppercase">
+                  {new Date(unlockTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Close button */}
+          <motion.button
+            onClick={handleClose}
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            className="w-full neo-brutalist bg-gray-200 hover:bg-gray-300 text-ink font-black uppercase py-3 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            Close
+          </motion.button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 export default function BadgesView({ unlockedLandmarks, unlockTimes, playerName, setPlayerName, avatarSeed, setAvatarSeed }: BadgesViewProps) {
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState(playerName);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [showRankModal, setShowRankModal] = useState(false);
+  const [selectedBadge, setSelectedBadge] = useState<LandmarkId | null>(null);
+  const nameRef = useRef<HTMLHeadingElement>(null);
 
   const totalLandmarks = Object.keys(LANDMARKS).length;
   const unlockedCount = unlockedLandmarks.length;
@@ -252,7 +381,7 @@ export default function BadgesView({ unlockedLandmarks, unlockTimes, playerName,
   const isComplete = unlockedCount === totalLandmarks;
 
   const getRank = (count: number) => {
-    if (count >= 3) return 'Grandmaster Guide';
+    if (count >= totalLandmarks) return 'Grandmaster Guide';
     switch (count) {
       case 0: return 'Novice Tourist';
       case 1: return 'Adept Pathfinder';
@@ -266,13 +395,23 @@ export default function BadgesView({ unlockedLandmarks, unlockTimes, playerName,
   };
 
   const handleSaveName = () => {
-    playSubtleClick();
+    playCopySound();
     if (tempName.trim()) {
       setPlayerName(tempName.trim());
     } else {
       setTempName(playerName); // revert if empty
     }
     setIsEditingName(false);
+    
+    // Animate the name after a tick to let it re-render
+    setTimeout(() => {
+      if (nameRef.current) {
+        gsap.fromTo(nameRef.current, 
+          { scale: 1.15, color: '#800000' },
+          { scale: 1, color: '#1a1a2e', duration: 0.5, ease: 'elastic.out(1.2, 0.5)' }
+        );
+      }
+    }, 50);
   };
 
 
@@ -323,7 +462,7 @@ export default function BadgesView({ unlockedLandmarks, unlockTimes, playerName,
                 </div>
               ) : (
                 <div className="flex items-center gap-2 mt-1">
-                  <h2 className="text-xl font-bold truncate">{playerName}</h2>
+                <h2 ref={nameRef} className="text-xl font-bold truncate">{playerName}</h2>
                   <button onClick={() => setIsEditingName(true)} className="text-gray-400 hover:text-ink shrink-0 transition-colors">
                     <Edit2 size={16} />
                   </button>
@@ -373,9 +512,17 @@ export default function BadgesView({ unlockedLandmarks, unlockTimes, playerName,
             return (
               <div 
                 key={lm.id}
+                onClick={() => {
+                  if (isUnlocked) {
+                    playModalOpen();
+                    setSelectedBadge(lm.id);
+                  }
+                }}
                 className={`
                   neo-brutalist-card p-4 flex items-start transition-all
-                  ${isUnlocked ? 'bg-gold text-ink border-4 border-ink shadow-[6px_6px_0px_0px_var(--color-ink)]' : 'bg-gray-100 text-gray-500 border-2 border-dashed border-gray-400 shadow-none'}
+                  ${isUnlocked 
+                    ? 'bg-gold text-ink border-4 border-ink shadow-[6px_6px_0px_0px_var(--color-ink)] cursor-pointer hover:-translate-y-1 hover:shadow-[8px_8px_0px_0px_var(--color-ink)] active:translate-y-0 active:shadow-[4px_4px_0px_0px_var(--color-ink)]' 
+                    : 'bg-gray-100 text-gray-500 border-2 border-dashed border-gray-400 shadow-none'}
                 `}
               >
                 <div className={`
@@ -432,6 +579,14 @@ export default function BadgesView({ unlockedLandmarks, unlockTimes, playerName,
           avatarSeed={avatarSeed} 
           setAvatarSeed={setAvatarSeed} 
           onClose={() => setShowAvatarModal(false)} 
+        />
+      )}
+
+      {selectedBadge && (
+        <BadgeDetailModal 
+          landmark={LANDMARKS[selectedBadge]} 
+          unlockTime={unlockTimes[selectedBadge]}
+          onClose={() => setSelectedBadge(null)} 
         />
       )}
 

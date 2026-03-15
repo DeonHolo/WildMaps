@@ -22,9 +22,10 @@ export default function ScanView({ targetId, unlockedLandmarks, onUnlock, onCanc
   const [success, setSuccess] = useState(false);
   const [isTorchOn, setIsTorchOn] = useState(false);
   const [torchSupported, setTorchSupported] = useState(false);
+  const totalLandmarks = Object.keys(LANDMARKS).length;
 
   const target = targetId ? LANDMARKS[targetId] : null;
-  const isFreeMode = unlockedLandmarks.length >= 3;
+  const isFreeMode = unlockedLandmarks.length >= totalLandmarks;
 
   // Load Model
   useEffect(() => {

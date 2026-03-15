@@ -1,14 +1,9 @@
 import { useState, useRef } from 'react';
-import { X, ShieldAlert, RotateCcw, Info, HelpCircle, Share2, Copy, Check, Download } from 'lucide-react';
-import {
-  FacebookShareButton, FacebookIcon,
-  TwitterShareButton,
-  TelegramShareButton, TelegramIcon,
-  RedditShareButton, RedditIcon,
-} from 'react-share';
+import { X, ShieldAlert, RotateCcw, Info, HelpCircle, Share2, Copy, Check, Download, Link, QrCode } from 'lucide-react';
+import { motion } from 'framer-motion';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { playSubtleClick, playResetSound } from '../utils/audio';
+import { playSubtleClick, playResetSound, playCopySound } from '../utils/audio';
 
 gsap.registerPlugin(useGSAP);
 
@@ -22,6 +17,8 @@ function ShareModal({ shareData, onClose }: { shareData: any, onClose: () => voi
   const [copied, setCopied] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const copyBtnRef = useRef<HTMLButtonElement>(null);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useGSAP(() => {
     gsap.from(overlayRef.current, { opacity: 0, duration: 0.3 });
@@ -54,37 +51,27 @@ function ShareModal({ shareData, onClose }: { shareData: any, onClose: () => voi
   };
 
   const handleCopy = () => {
-    playSubtleClick();
-    navigator.clipboard.writeText(`${shareData.text} 📍 ${shareData.url}`);
+    playCopySound();
+    navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+    
+    // Clear any existing timeout to prevent flicker on spam
+    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
-  const handleMessengerShare = () => {
-    playSubtleClick();
-    const message = `${shareData.text}\n${shareData.url}`;
-    const isAndroid = /android/i.test(navigator.userAgent);
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-
-    if (isAndroid) {
-      // Android intent:// bypasses Web Share API duplication bug
-      const intentUrl = `intent://send/#Intent;package=com.facebook.orca;scheme=fb-messenger;S.android.intent.extra.TEXT=${encodeURIComponent(message)};end`;
-      window.location.href = intentUrl;
-    } else if (isIOS) {
-      // iOS: copy message to clipboard, then open Messenger with just the link
-      navigator.clipboard.writeText(message).catch(() => { });
-      window.location.href = `fb-messenger://share/?link=${encodeURIComponent(shareData.url)}`;
-    } else {
-      // Desktop fallback
-      window.open(`fb-messenger://share/?link=${encodeURIComponent(shareData.url)}`, '_blank');
+    // Punch animation on button
+    if (copyBtnRef.current) {
+      gsap.fromTo(copyBtnRef.current, 
+        { scale: 0.92, rotation: -1 },
+        { scale: 1, rotation: 0, duration: 0.4, ease: 'elastic.out(1.2, 0.4)' }
+      );
     }
+
+    copyTimeoutRef.current = setTimeout(() => setCopied(false), 2500);
   };
 
   const handleDownloadQR = () => {
     playSubtleClick();
     const qrUrl = '/wildmaps-qr.png';
-
-    // Create an invisible link and trigger a download
     fetch(qrUrl)
       .then(response => response.blob())
       .then(blob => {
@@ -97,78 +84,103 @@ function ShareModal({ shareData, onClose }: { shareData: any, onClose: () => voi
         a.click();
         window.URL.revokeObjectURL(url);
       })
-      .catch(() => window.open(qrUrl, '_blank')); // Fallback to opening in new tab
+      .catch(() => window.open(qrUrl, '_blank'));
   };
 
   return (
     <div ref={overlayRef} className="absolute inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
       <div ref={containerRef} className="neo-brutalist-card bg-bg w-full max-w-sm flex flex-col relative shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-        <div className="bg-white p-3 flex justify-between items-center border-b-4 border-ink">
+        {/* Header */}
+        <div className="bg-maroon text-white p-3 flex justify-between items-center border-b-4 border-ink">
           <h3 className="font-bold uppercase tracking-tight text-lg flex items-center gap-2">
-            Share Via...
+            <Share2 size={18} className="text-gold" />
+            Invite Friends
           </h3>
-          <button onClick={handleClose} className="hover:bg-gray-100 p-1 transition-colors hover:rotate-90 duration-300">
+          <button onClick={handleClose} className="hover:bg-white/20 p-1 transition-colors hover:rotate-90 duration-300">
             <X size={20} />
           </button>
         </div>
 
-        <div className="p-5 flex flex-col gap-4 bg-white">
+        <div className="p-5 flex flex-col gap-5 bg-white">
+          {/* Invite message */}
+          <div className="text-center">
+            <p className="text-sm text-gray-600 leading-relaxed">
+              Challenge your classmates to find all <strong>3 hidden landmarks</strong> on campus! Share the link or scan the QR code below.
+            </p>
+          </div>
+
           {/* QR Code */}
-          <div className="w-full flex flex-col items-center justify-center p-4">
-            <p className="text-sm font-bold uppercase text-ink mb-3 tracking-widest">Scan to Play</p>
-            <img
-              src="/wildmaps-qr.png"
-              alt="WildMaps QR Code"
-              width={160}
-              height={160}
-              className="shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] border-4 border-ink mb-4"
-              crossOrigin="anonymous"
-            />
+          <div className="w-full flex flex-col items-center justify-center p-4 bg-gray-50 border-2 border-ink">
+            <div className="flex items-center gap-1.5 mb-3">
+              <QrCode size={14} className="text-maroon" />
+              <p className="text-xs font-bold uppercase text-ink tracking-widest">Scan to Play</p>
+            </div>
+            <motion.div
+              initial={{ scale: 0.85, rotate: -5, opacity: 0 }}
+              animate={{ scale: [0.85, 1.08, 1], rotate: [-5, 3, 0], opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
+              className="mb-3"
+            >
+              <motion.img
+                src="/wildmaps-qr.png"
+                alt="WildMaps QR Code"
+                width={140}
+                height={140}
+                className="shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-3 border-ink"
+                crossOrigin="anonymous"
+                whileHover={{ y: -4, scale: 1.03, rotate: 1 }}
+                transition={{ type: 'spring', stiffness: 280, damping: 18 }}
+              />
+            </motion.div>
             <button
               onClick={handleDownloadQR}
-              className="flex items-center gap-2 text-xs font-bold uppercase hover:text-blue-600 transition-colors"
+              className="flex items-center gap-1.5 text-[11px] font-bold uppercase text-gray-500 hover:text-maroon transition-colors"
             >
-              <Download size={14} /> Download QR
+              <Download size={12} /> Save QR Image
             </button>
           </div>
 
-          <div className="flex gap-3 justify-center flex-wrap mt-2">
-            <FacebookShareButton url={shareData.url} hashtag="#WildMaps" quote={shareData.text}>
-              <FacebookIcon size={44} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full border-2 border-ink" />
-            </FacebookShareButton>
-            <button
-              onClick={handleMessengerShare}
-              className="hover:scale-105 transition-transform"
-              title="Share via Messenger"
-            >
-              <div className="w-[44px] h-[44px] rounded-full bg-[#0099FF] flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] border-2 border-ink">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
-                  <path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.2 5.42 3.15 7.15.16.14.26.34.27.56l.05 1.78c.02.56.6.93 1.11.7l1.98-.87c.17-.08.36-.1.55-.06.93.26 1.92.4 2.89.4 5.64 0 10-4.13 10-9.7S17.64 2 12 2zm5.89 7.54l-2.89 4.54c-.46.72-1.41.9-2.09.39l-2.3-1.72a.6.6 0 00-.72 0l-3.1 2.35c-.41.31-.96-.18-.68-.62l2.89-4.54c.46-.72 1.41-.9 2.09-.39l2.3 1.72a.6.6 0 00.72 0l3.1-2.35c.41-.31.96.18.68.62z" />
-                </svg>
-              </div>
-            </button>
-            <TwitterShareButton url={shareData.url} title={shareData.text}>
-              <div className="w-[44px] h-[44px] rounded-full bg-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] border-2 border-ink hover:scale-105 transition-transform">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
-                  <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
-                </svg>
-              </div>
-            </TwitterShareButton>
-            <TelegramShareButton url={shareData.url} title={shareData.text}>
-              <TelegramIcon size={44} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full border-2 border-ink" />
-            </TelegramShareButton>
-            <RedditShareButton url={shareData.url} title={shareData.text}>
-              <RedditIcon size={44} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full border-2 border-ink" />
-            </RedditShareButton>
+          {/* Share link preview */}
+          <div className="bg-gray-50 border-2 border-ink p-3">
+            <p className="text-[10px] font-mono uppercase text-gray-400 mb-1.5">Share Message</p>
+            <p className="text-xs text-ink leading-relaxed font-mono break-words">
+              {shareData.text}
+            </p>
+            <p className="text-xs text-blue-600 font-mono mt-1 break-words">
+              {shareData.url}
+            </p>
           </div>
 
-          <button
+          {/* Copy Link Button */}
+          <motion.button
+            ref={copyBtnRef}
             onClick={handleCopy}
-            className={`w-full neo-brutalist font-black uppercase py-3 mt-4 flex items-center justify-center gap-2 transition-all hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] text-sm ${copied ? 'bg-green-400 text-ink' : 'bg-gray-200 hover:bg-gray-300 text-ink'}`}
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            className={`w-full neo-brutalist font-black uppercase py-4 flex items-center justify-center gap-2.5 transition-colors text-base ${
+              copied 
+                ? 'bg-green-400 text-ink shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' 
+                : 'bg-gold hover:bg-yellow-400 text-ink shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]'
+            }`}
           >
-            {copied ? <Check size={18} /> : <Copy size={18} />}
-            {copied ? 'Copied!' : 'Copy Link'}
-          </button>
+            {copied ? (
+              <>
+                <motion.div
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+                >
+                  <Check size={20} strokeWidth={3} />
+                </motion.div>
+                Copied to Clipboard!
+              </>
+            ) : (
+              <>
+                <Link size={20} />
+                Copy Invite Link
+              </>
+            )}
+          </motion.button>
         </div>
       </div>
     </div>
