@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { X, ShieldAlert, RotateCcw, Phone, Info, HelpCircle, Share2, Copy, Check } from 'lucide-react';
+import { X, ShieldAlert, RotateCcw, Info, HelpCircle, Share2, Copy, Check, Download } from 'lucide-react';
 import {
   FacebookShareButton, FacebookIcon,
   TwitterShareButton, TwitterIcon,
@@ -19,10 +19,150 @@ interface SettingsModalProps {
   onShowTutorial: () => void;
 }
 
+function ShareModal({ shareData, onClose }: { shareData: any, onClose: () => void }) {
+  const [copied, setCopied] = useState(false);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    gsap.from(overlayRef.current, { opacity: 0, duration: 0.3 });
+    gsap.from(containerRef.current, { 
+      y: 60, 
+      opacity: 0, 
+      scale: 0.9, 
+      rotation: 2,
+      duration: 0.5, 
+      ease: 'back.out(1.5)' 
+    });
+  }, []);
+
+  const handleClose = () => {
+    playSubtleClick();
+    gsap.to(containerRef.current, { 
+      y: 40, 
+      opacity: 0, 
+      scale: 0.95, 
+      rotation: -2,
+      duration: 0.25, 
+      ease: 'power2.in' 
+    });
+    gsap.to(overlayRef.current, { 
+      opacity: 0, 
+      duration: 0.25, 
+      ease: 'power2.in', 
+      onComplete: onClose 
+    });
+  };
+
+  const handleCopy = () => {
+    playSubtleClick();
+    navigator.clipboard.writeText(`${shareData.text} 📍 ${shareData.url}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleMessengerShare = () => {
+    playSubtleClick();
+    window.open(`fb-messenger://share/?link=${encodeURIComponent(shareData.url)}`, '_blank');
+  };
+
+  const handleDownloadQR = () => {
+    playSubtleClick();
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=512x512&data=${encodeURIComponent(shareData.url)}&color=1a1a1a&bgcolor=ffffff`;
+    
+    // Create an invisible link and trigger a download
+    fetch(qrUrl)
+      .then(response => response.blob())
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = 'WildMaps-QR.png';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      })
+      .catch(() => window.open(qrUrl, '_blank')); // Fallback to opening in new tab
+  };
+
+  return (
+    <div ref={overlayRef} className="absolute inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+      <div ref={containerRef} className="neo-brutalist-card bg-bg w-full max-w-sm flex flex-col relative shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+        <div className="bg-white p-3 flex justify-between items-center border-b-4 border-ink">
+          <h3 className="font-bold uppercase tracking-tight text-lg flex items-center gap-2">
+            Share Via...
+          </h3>
+          <button onClick={handleClose} className="hover:bg-gray-100 p-1 transition-colors hover:rotate-90 duration-300">
+            <X size={20} />
+          </button>
+        </div>
+        
+        <div className="p-5 flex flex-col gap-4 bg-white">
+          {/* QR Code */}
+          <div className="w-full flex flex-col items-center justify-center p-4">
+            <p className="text-sm font-bold uppercase text-ink mb-3 tracking-widest">Scan to Play</p>
+            <img 
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(shareData.url)}&color=1a1a1a&bgcolor=ffffff`}
+              alt="WildMaps QR Code"
+              width={160}
+              height={160}
+              className="shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] border-4 border-ink mb-4"
+              crossOrigin="anonymous"
+            />
+            <button 
+              onClick={handleDownloadQR}
+              className="flex items-center gap-2 text-xs font-bold uppercase hover:text-blue-600 transition-colors"
+            >
+              <Download size={14} /> Download QR
+            </button>
+          </div>
+
+          <div className="flex gap-3 justify-center flex-wrap mt-2">
+            <FacebookShareButton url={shareData.url} hashtag="#WildMaps" quote={shareData.text}>
+              <FacebookIcon size={44} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full border-2 border-ink" />
+            </FacebookShareButton>
+            <button
+              onClick={handleMessengerShare}
+              className="hover:scale-105 transition-transform"
+              title="Share via Messenger"
+            >
+              <div className="w-[44px] h-[44px] rounded-full bg-[#0099FF] flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] border-2 border-ink">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
+                  <path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.2 5.42 3.15 7.15.16.14.26.34.27.56l.05 1.78c.02.56.6.93 1.11.7l1.98-.87c.17-.08.36-.1.55-.06.93.26 1.92.4 2.89.4 5.64 0 10-4.13 10-9.7S17.64 2 12 2zm5.89 7.54l-2.89 4.54c-.46.72-1.41.9-2.09.39l-2.3-1.72a.6.6 0 00-.72 0l-3.1 2.35c-.41.31-.96-.18-.68-.62l2.89-4.54c.46-.72 1.41-.9 2.09-.39l2.3 1.72a.6.6 0 00.72 0l3.1-2.35c.41-.31.96.18.68.62z"/>
+                </svg>
+              </div>
+            </button>
+            <TwitterShareButton url={shareData.url} title={shareData.text}>
+              <TwitterIcon size={44} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full border-2 border-ink" />
+            </TwitterShareButton>
+            <WhatsappShareButton url={shareData.url} title={shareData.text} separator=" - ">
+              <WhatsappIcon size={44} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full border-2 border-ink" />
+            </WhatsappShareButton>
+            <TelegramShareButton url={shareData.url} title={shareData.text}>
+              <TelegramIcon size={44} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full border-2 border-ink" />
+            </TelegramShareButton>
+            <RedditShareButton url={shareData.url} title={shareData.text}>
+              <RedditIcon size={44} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full border-2 border-ink" />
+            </RedditShareButton>
+          </div>
+          
+          <button 
+            onClick={handleCopy}
+            className={`w-full neo-brutalist font-black uppercase py-3 mt-4 flex items-center justify-center gap-2 transition-all hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] text-sm ${copied ? 'bg-green-400 text-ink' : 'bg-gray-200 hover:bg-gray-300 text-ink'}`}
+          >
+            {copied ? <Check size={18} /> : <Copy size={18} />}
+            {copied ? 'Copied!' : 'Copy Link'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SettingsModal({ onClose, onReset, onShowTutorial }: SettingsModalProps) {
   const [confirmReset, setConfirmReset] = useState(false);
-  const [showShareOptions, setShowShareOptions] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   
   const overlayRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -76,21 +216,9 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
     url: 'https://wildmaps.vercel.app/',
   };
 
-  const handleShowShareOptions = () => {
+  const handleShowShareModal = () => {
     playSubtleClick();
-    setShowShareOptions(true);
-  };
-
-  const handleMessengerShare = () => {
-    playSubtleClick();
-    window.open(`fb-messenger://share/?link=${encodeURIComponent(shareData.url)}`, '_blank');
-  };
-
-  const handleCopy = () => {
-    playSubtleClick();
-    navigator.clipboard.writeText(`${shareData.text} 📍 ${shareData.url}`);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setShowShareModal(true);
   };
 
   return (
@@ -135,72 +263,13 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
               Challenge your friends to find all the landmarks!
             </p>
             
-            {!showShareOptions ? (
-              <button 
-                onClick={handleShowShareOptions}
-                className="w-full neo-brutalist bg-gold hover:bg-gold-dark text-ink font-black uppercase py-3 flex items-center justify-center gap-2 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)]"
-              >
-                <Share2 size={20} />
-                Share WildMaps
-              </button>
-            ) : (
-              <div className="bg-white border-2 border-ink p-3 flex flex-col gap-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <div className="flex justify-between items-center">
-                  <span className="font-bold text-sm uppercase">Share via...</span>
-                  <button onClick={() => { playSubtleClick(); setShowShareOptions(false); }} className="text-gray-500 hover:text-ink transition-colors hover:rotate-90 duration-300">
-                    <X size={16} />
-                  </button>
-                </div>
-
-                <div className="flex gap-3 justify-center flex-wrap">
-                  {/* QR Code */}
-                  <div className="w-full flex flex-col items-center justify-center p-2 mb-2 bg-gray-50 border-2 border-dashed border-gray-300">
-                    <p className="text-xs font-bold uppercase text-gray-500 mb-2">Scan to Play</p>
-                    <img 
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(shareData.url)}&color=1a1a1a&bgcolor=ffffff`}
-                      alt="WildMaps QR Code"
-                      width={120}
-                      height={120}
-                      className="shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-2 border-ink"
-                    />
-                  </div>
-
-                  <FacebookShareButton url={shareData.url} hashtag="#WildMaps" quote={shareData.text}>
-                    <FacebookIcon size={40} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full" />
-                  </FacebookShareButton>
-                  <button
-                    onClick={handleMessengerShare}
-                    className="hover:scale-105 transition-transform"
-                    title="Share via Messenger"
-                  >
-                    <div className="w-[40px] h-[40px] rounded-full bg-[#0099FF] flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                      <svg viewBox="0 0 24 24" width="22" height="22" fill="white">
-                        <path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.2 5.42 3.15 7.15.16.14.26.34.27.56l.05 1.78c.02.56.6.93 1.11.7l1.98-.87c.17-.08.36-.1.55-.06.93.26 1.92.4 2.89.4 5.64 0 10-4.13 10-9.7S17.64 2 12 2zm5.89 7.54l-2.89 4.54c-.46.72-1.41.9-2.09.39l-2.3-1.72a.6.6 0 00-.72 0l-3.1 2.35c-.41.31-.96-.18-.68-.62l2.89-4.54c.46-.72 1.41-.9 2.09-.39l2.3 1.72a.6.6 0 00.72 0l3.1-2.35c.41-.31.96.18.68.62z"/>
-                      </svg>
-                    </div>
-                  </button>
-                  <TwitterShareButton url={shareData.url} title={shareData.text}>
-                    <TwitterIcon size={40} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full" />
-                  </TwitterShareButton>
-                  <WhatsappShareButton url={shareData.url} title={shareData.text} separator=" - ">
-                    <WhatsappIcon size={40} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full" />
-                  </WhatsappShareButton>
-                  <TelegramShareButton url={shareData.url} title={shareData.text}>
-                    <TelegramIcon size={40} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full" />
-                  </TelegramShareButton>
-                  <RedditShareButton url={shareData.url} title={shareData.text}>
-                    <RedditIcon size={40} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full" />
-                  </RedditShareButton>
-                </div>
-                <button 
-                  onClick={handleCopy}
-                  className={`w-full neo-brutalist font-black uppercase py-2 flex items-center justify-center gap-2 transition-all hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] text-sm ${copied ? 'bg-green-400 text-ink' : 'bg-gray-200 hover:bg-gray-300 text-ink'}`}
-                >
-                  {copied ? <Check size={16} /> : <Copy size={16} />}
-                  {copied ? 'Copied!' : 'Copy Link'}
-                </button>
-              </div>
-            )}
+            <button 
+              onClick={handleShowShareModal}
+              className="w-full neo-brutalist bg-gold hover:bg-gold-dark text-ink font-black uppercase py-3 flex items-center justify-center gap-2 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)]"
+            >
+              <Share2 size={20} />
+              Share WildMaps
+            </button>
           </section>
 
           {/* Privacy Section */}
@@ -250,6 +319,13 @@ export default function SettingsModal({ onClose, onReset, onShowTutorial }: Sett
           </section>
         </div>
       </div>
+
+      {showShareModal && (
+        <ShareModal 
+          shareData={shareData} 
+          onClose={() => setShowShareModal(false)} 
+        />
+      )}
     </div>
   );
 }
