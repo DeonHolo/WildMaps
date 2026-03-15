@@ -66,7 +66,7 @@ function ShareModal({ shareData, onClose }: { shareData: any, onClose: () => voi
       try {
         await navigator.share({
           // Combine text and url into a single text block to prevent Messenger double-copy bug
-          text: `${shareData.text}\n\n${shareData.url}`
+          text: `🗺️ I'm exploring the CIT-U campus in WildMaps! Can you find all the landmarks? 📍 ${shareData.url}`
         });
       } catch (err) {
         console.error('Error sharing:', err);
