@@ -8,11 +8,12 @@ import { playScanComplete, playSubtleClick } from '../utils/audio';
 
 interface ScanViewProps {
   targetId: LandmarkId | null;
+  unlockedLandmarks: LandmarkId[];
   onUnlock: (id: LandmarkId) => void;
   onCancel: () => void;
 }
 
-export default function ScanView({ targetId, onUnlock, onCancel }: ScanViewProps) {
+export default function ScanView({ targetId, unlockedLandmarks, onUnlock, onCancel }: ScanViewProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [model, setModel] = useState<mobilenet.MobileNet | null>(null);
   const [isVideoReady, setIsVideoReady] = useState(false);
@@ -94,7 +95,10 @@ export default function ScanView({ targetId, onUnlock, onCancel }: ScanViewProps
 
   // Continuous Scan Effect
   useEffect(() => {
-    if (!model || !isVideoReady || success || !targetId) return;
+    // Prevent scanning if already unlocked (unless all 3 are found)
+    const isAlreadyUnlocked = targetId && unlockedLandmarks.includes(targetId) && unlockedLandmarks.length < 3;
+    
+    if (!model || !isVideoReady || success || !targetId || isAlreadyUnlocked) return;
 
     const interval = setInterval(async () => {
       if (!videoRef.current) return;
@@ -124,7 +128,8 @@ export default function ScanView({ targetId, onUnlock, onCancel }: ScanViewProps
 
   // Debug unlock for testing
   const handleDebugUnlock = () => {
-    if (targetId) {
+    const isAlreadyUnlocked = targetId && unlockedLandmarks.includes(targetId) && unlockedLandmarks.length < 3;
+    if (targetId && !isAlreadyUnlocked) {
       playScanComplete();
       setSuccess(true);
       setTimeout(() => {

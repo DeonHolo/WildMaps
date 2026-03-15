@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { X, ShieldAlert, RotateCcw, Info, HelpCircle, Share2, Copy, Check, Download } from 'lucide-react';
 import {
   FacebookShareButton, FacebookIcon,
-  TwitterShareButton, TwitterIcon,
+  TwitterShareButton,
   TelegramShareButton, TelegramIcon,
   RedditShareButton, RedditIcon,
 } from 'react-share';
@@ -133,7 +133,11 @@ function ShareModal({ shareData, onClose }: { shareData: any, onClose: () => voi
               </div>
             </button>
             <TwitterShareButton url={shareData.url} title={shareData.text}>
-              <TwitterIcon size={44} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full border-2 border-ink" />
+              <div className="w-[44px] h-[44px] rounded-full bg-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] border-2 border-ink hover:scale-105 transition-transform">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
+                  <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/>
+                </svg>
+              </div>
             </TwitterShareButton>
             <TelegramShareButton url={shareData.url} title={shareData.text}>
               <TelegramIcon size={44} round className="hover:scale-105 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full border-2 border-ink" />

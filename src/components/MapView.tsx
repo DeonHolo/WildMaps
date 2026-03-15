@@ -168,6 +168,10 @@ export default function MapView({ unlockedLandmarks, justUnlocked, onSelectLandm
   const [activeHint, setActiveHint] = useState<LandmarkId | null>(null);
 
   const handleNodeClick = (id: LandmarkId) => {
+    // If it's already unlocked AND not all are unlocked, prevent scanning again
+    if (unlockedLandmarks.includes(id) && unlockedLandmarks.length < 3) {
+      return;
+    }
     playModalOpen();
     setActiveHint(id);
   };

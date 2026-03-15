@@ -151,6 +151,17 @@ export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
 
   return (
     <div ref={overlayRef} className="absolute inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm overflow-hidden">
+      {/* 
+        Image Preloader: 
+        Renders all tutorial images hidden in the DOM as soon as modal opens, 
+        ensuring they are cached by the browser and eliminating the white flash on slide changes.
+      */}
+      <div className="hidden">
+        {ONBOARDING_STEPS.map(s => (
+          <img key={`preload-${s.image}`} src={s.image} alt="Preload" />
+        ))}
+      </div>
+
       <div 
         ref={containerRef}
         className="neo-brutalist-card bg-bg w-full max-w-sm flex flex-col relative max-h-[90vh] overflow-visible"

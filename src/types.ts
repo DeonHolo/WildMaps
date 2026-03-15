@@ -29,7 +29,7 @@ export const LANDMARKS: Record<LandmarkId, Landmark> = {
     name: 'College Library',
     description: 'The main hub for research, studying, and academic resources.',
     hint: "Look for the building with the vast collection of books and study areas!",
-    shortHint: "READ",
+    shortHint: "BOOK",
     imageUrl: 'https://picsum.photos/seed/library/400/200',
     x: 20,
     y: 50,

@@ -241,6 +241,7 @@ export default function App() {
     setJustUnlocked(id);
     setShowAchievementModal(id);
     playSuccessChime();
+    setTargetLandmark(null);
     changeView('map');
   };
 
@@ -358,8 +359,12 @@ export default function App() {
             {currentView === 'scan' && (
               <ScanView 
                 targetId={targetLandmark} 
+                unlockedLandmarks={unlockedLandmarks}
                 onUnlock={handleUnlock} 
-                onCancel={() => changeView('map')} 
+                onCancel={() => {
+                  setTargetLandmark(null);
+                  changeView('map');
+                }} 
               />
             )}
             {currentView === 'profile' && (
