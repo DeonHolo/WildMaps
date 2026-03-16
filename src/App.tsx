@@ -124,23 +124,6 @@ function MapClearedModal({ onClose, width, height, playerName, totalLandmarks }:
             You are now the campus <span className="text-maroon">Grandmaster Guide</span>.
           </p>
 
-          <div className="flex flex-col gap-2 text-left">
-            <div className="grid grid-cols-2 gap-2">
-              <div className="neo-brutalist bg-white p-2.5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-                <p className="text-[10px] font-mono uppercase text-gray-500 mb-1">Progress</p>
-                <p className="text-lg font-black text-maroon">100%</p>
-              </div>
-              <div className="neo-brutalist bg-white p-2.5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-                <p className="text-[10px] font-mono uppercase text-gray-500 mb-1">Unlocked</p>
-                <p className="text-lg font-black text-maroon">{totalLandmarks}/{totalLandmarks}</p>
-              </div>
-            </div>
-            <div className="neo-brutalist bg-white p-2.5 flex items-center justify-between shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-              <p className="text-[10px] font-mono uppercase text-gray-500">Rank</p>
-              <p className="text-sm font-black uppercase text-maroon">Grandmaster Guide</p>
-            </div>
-          </div>
-
           <div
             ref={characterRef}
             className="w-full aspect-video neo-brutalist bg-white overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
