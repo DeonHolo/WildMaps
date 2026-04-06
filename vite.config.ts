@@ -41,7 +41,7 @@ export default defineConfig(({mode}) => {
         },
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,json,wasm}'],
-          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB limit
+          maximumFileSizeToCacheInBytes: 25 * 1024 * 1024, // allow large illustration PNGs
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/api\.dicebear\.com\/.*/i,
