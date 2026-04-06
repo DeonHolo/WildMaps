@@ -1,10 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import * as tf from '@tensorflow/tfjs';
-import * as mobilenet from '@tensorflow-models/mobilenet';
 import { Camera, X, CheckCircle2, AlertCircle, Loader2, ScanLine, Flashlight, FlashlightOff } from 'lucide-react';
 import { motion } from 'motion/react';
 import { LandmarkId, LANDMARKS } from '../types';
 import { playScanComplete, playSubtleClick } from '../utils/audio';
+
+const TM_MODEL_URL = '/tm-model/model.json';
+const TM_METADATA_URL = '/tm-model/metadata.json';
+const CONFIDENCE_THRESHOLD = 0.70;
+const IMAGE_SIZE = 224;
 
 interface ScanViewProps {
   targetId: LandmarkId | null;
@@ -15,7 +19,8 @@ interface ScanViewProps {
 
 export default function ScanView({ targetId, unlockedLandmarks, onUnlock, onCancel }: ScanViewProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [model, setModel] = useState<mobilenet.MobileNet | null>(null);
+  const [model, setModel] = useState<tf.LayersModel | null>(null);
+  const labelsRef = useRef<string[]>([]);
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [scanResult, setScanResult] = useState<{ className: string; probability: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -27,12 +32,17 @@ export default function ScanView({ targetId, unlockedLandmarks, onUnlock, onCanc
   const target = targetId ? LANDMARKS[targetId] : null;
   const isFreeMode = unlockedLandmarks.length >= totalLandmarks;
 
-  // Load Model
+  // Load Teachable Machine model + class labels
   useEffect(() => {
     const loadModel = async () => {
       try {
         await tf.ready();
-        const loadedModel = await mobilenet.load();
+        const [loadedModel, metaResponse] = await Promise.all([
+          tf.loadLayersModel(TM_MODEL_URL),
+          fetch(TM_METADATA_URL),
+        ]);
+        const metadata = await metaResponse.json();
+        labelsRef.current = metadata.labels as string[];
         setModel(loadedModel);
       } catch (err) {
         console.error('Failed to load model', err);
@@ -95,9 +105,28 @@ export default function ScanView({ targetId, unlockedLandmarks, onUnlock, onCanc
     }
   };
 
+  // Run TM model on a video frame and return { className, probability } for each label
+  const predictFrame = async (video: HTMLVideoElement, tmModel: tf.LayersModel) => {
+    const tensor = tf.tidy(() => {
+      const pixels = tf.browser.fromPixels(video);
+      const resized = tf.image.resizeBilinear(pixels, [IMAGE_SIZE, IMAGE_SIZE]);
+      const normalized = resized.div(255.0);
+      return normalized.expandDims(0);
+    });
+
+    const output = tmModel.predict(tensor) as tf.Tensor;
+    const probabilities = await output.data();
+    tensor.dispose();
+    output.dispose();
+
+    return labelsRef.current.map((label, i) => ({
+      className: label,
+      probability: probabilities[i],
+    }));
+  };
+
   // Continuous Scan Effect
   useEffect(() => {
-    // Prevent scanning to unlock if already unlocked (unless all 3 are found, which makes it free mode)
     const isAlreadyUnlocked = targetId && unlockedLandmarks.includes(targetId) && !isFreeMode;
     
     if (!model || !isVideoReady || success || (isAlreadyUnlocked && !isFreeMode) || (!targetId && !isFreeMode)) return;
@@ -105,25 +134,28 @@ export default function ScanView({ targetId, unlockedLandmarks, onUnlock, onCanc
     const interval = setInterval(async () => {
       if (!videoRef.current) return;
       try {
-        const predictions = await model.classify(videoRef.current);
-        if (predictions && predictions.length > 0) {
-          const topPrediction = predictions[0];
-          setScanResult(topPrediction);
-          
-          if (topPrediction.probability > 0.1 && !isFreeMode) {
-            // Success! (Only unlock if not in free mode)
-            playScanComplete();
-            setSuccess(true);
-            clearInterval(interval);
-            setTimeout(() => {
-              if (targetId) onUnlock(targetId);
-            }, 2000);
-          }
+        const predictions = await predictFrame(videoRef.current, model);
+        const top = predictions.reduce((best, p) => p.probability > best.probability ? p : best, predictions[0]);
+        setScanResult(top);
+
+        if (
+          !isFreeMode &&
+          targetId &&
+          top.className !== 'other' &&
+          top.className === targetId &&
+          top.probability >= CONFIDENCE_THRESHOLD
+        ) {
+          playScanComplete();
+          setSuccess(true);
+          clearInterval(interval);
+          setTimeout(() => {
+            onUnlock(targetId);
+          }, 2000);
         }
       } catch (err) {
         console.error('Scan error:', err);
       }
-    }, 1000); // Scan every 1 second
+    }, 1000);
 
     return () => clearInterval(interval);
   }, [model, isVideoReady, success, targetId, onUnlock]);
