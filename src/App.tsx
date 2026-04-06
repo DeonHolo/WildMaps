@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Map, Camera, UserCircle, Settings, Trophy, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Confetti from 'react-confetti';
@@ -177,6 +177,10 @@ export default function App() {
   const [unlockedLandmarks, setUnlockedLandmarks] = useState<LandmarkId[]>([]);
   const [targetLandmark, setTargetLandmark] = useState<LandmarkId | null>(null);
   const [justUnlocked, setJustUnlocked] = useState<LandmarkId | null>(null);
+  /** Sector stays visually fogged until achievement modal closes — then fog clears with animation. */
+  const [pendingFogReveal, setPendingFogReveal] = useState<LandmarkId | null>(null);
+  /** Keeps fog SVG mounted until the 3rd sector's mask path finishes animating (length === 3 would else unmount fog immediately). */
+  const [lastSectorFogAnimating, setLastSectorFogAnimating] = useState(false);
   const [showAchievementModal, setShowAchievementModal] = useState<LandmarkId | null>(null);
   const [showAllUnlockedModal, setShowAllUnlockedModal] = useState(false);
   const { width, height } = useWindowSize();
@@ -294,6 +298,7 @@ export default function App() {
       return prev;
     });
     setJustUnlocked(id);
+    setPendingFogReveal(id);
     setShowAchievementModal(id);
     playSuccessChime();
     setTargetLandmark(null);
@@ -301,14 +306,23 @@ export default function App() {
   };
 
   const closeAchievementModal = () => {
+    const closingLastSector =
+      pendingFogReveal !== null && unlockedLandmarks.length === totalLandmarks;
     setShowAchievementModal(null);
-    if (unlockedLandmarks.length === totalLandmarks) {
-      setTimeout(() => {
-        setShowAllUnlockedModal(true);
-        playGrandSuccessChime();
-      }, 500);
+    setPendingFogReveal(null);
+    if (closingLastSector) {
+      setLastSectorFogAnimating(true);
     }
   };
+
+  /** Called from MapView after GSAP finishes revealing the final sector's fog hole. */
+  const handleLastSectorFogComplete = useCallback(() => {
+    setLastSectorFogAnimating(false);
+    setTimeout(() => {
+      setShowAllUnlockedModal(true);
+      playGrandSuccessChime();
+    }, 500);
+  }, []);
 
   const startScan = (id: LandmarkId) => {
     setTargetLandmark(id);
@@ -319,6 +333,10 @@ export default function App() {
     playSubtleClick();
     setUnlockedLandmarks([]);
     setUnlockTimes({});
+    setJustUnlocked(null);
+    setPendingFogReveal(null);
+    setLastSectorFogAnimating(false);
+    setShowAchievementModal(null);
     
     localStorage.setItem('wildmaps_unlocked', JSON.stringify([]));
     localStorage.removeItem('wildmaps_unlock_times');
@@ -360,7 +378,7 @@ export default function App() {
   };
 
   return (
-    <div className="h-full flex flex-col max-w-md mx-auto border-x-4 border-ink relative overflow-hidden bg-bg bg-grid-pattern shadow-2xl">
+    <div className="h-full min-h-[100dvh] flex flex-col max-w-md mx-auto border-x-4 border-ink relative overflow-hidden bg-bg bg-grid-pattern shadow-2xl">
       {/* Header */}
       <header className="shrink-0 bg-maroon text-bg p-4 border-b-4 border-ink flex justify-between items-center z-10">
         <h1 className="text-2xl font-bold uppercase tracking-tighter">WildMaps</h1>
@@ -405,6 +423,9 @@ export default function App() {
               <MapView 
                 unlockedLandmarks={unlockedLandmarks} 
                 justUnlocked={justUnlocked}
+                pendingFogReveal={pendingFogReveal}
+                lastSectorFogAnimating={lastSectorFogAnimating}
+                onLastSectorFogComplete={handleLastSectorFogComplete}
                 onSelectLandmark={startScan} 
               />
             )}

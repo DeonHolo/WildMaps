@@ -1,8 +1,8 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useLayoutEffect, useId } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { LandmarkId, LANDMARKS } from '../types';
-import { MapPin, Lock, Unlock, X, Camera } from 'lucide-react';
+import { Lock, X, Camera } from 'lucide-react';
 import { playModalOpen, playSubtleClick } from '../utils/audio';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -12,6 +12,11 @@ gsap.registerPlugin(useGSAP);
 interface MapViewProps {
   unlockedLandmarks: LandmarkId[];
   justUnlocked: LandmarkId | null;
+  /** While set, that sector stays fogged until the achievement modal is dismissed. */
+  pendingFogReveal: LandmarkId | null;
+  /** True while the 3rd sector's fog hole is animating — keeps fog layer mounted. */
+  lastSectorFogAnimating: boolean;
+  onLastSectorFogComplete: () => void;
   onSelectLandmark: (id: LandmarkId) => void;
 }
 
@@ -169,8 +174,77 @@ function HintModal({
   );
 }
 
-export default function MapView({ unlockedLandmarks, justUnlocked, onSelectLandmark }: MapViewProps) {
+export default function MapView({
+  unlockedLandmarks,
+  justUnlocked,
+  pendingFogReveal,
+  lastSectorFogAnimating,
+  onLastSectorFogComplete,
+  onSelectLandmark,
+}: MapViewProps) {
   const [activeHint, setActiveHint] = useState<LandmarkId | null>(null);
+  const prevPendingFogRef = useRef<LandmarkId | null>(null);
+  const fogSvgRef = useRef<SVGSVGElement | null>(null);
+  const fogTweenRef = useRef<gsap.core.Tween | null>(null);
+  const fogUid = useId().replace(/:/g, '');
+  const noiseFilterId = `fog-noise-${fogUid}`;
+  const maskId = `fog-mask-${fogUid}`;
+
+  const fogHoleIds = unlockedLandmarks.filter((id) => id !== pendingFogReveal);
+
+  const showFogOverlay =
+    unlockedLandmarks.length < 3 || pendingFogReveal !== null || lastSectorFogAnimating;
+
+  useLayoutEffect(() => {
+    const wasPending = prevPendingFogRef.current;
+    prevPendingFogRef.current = pendingFogReveal;
+
+    if (!wasPending || pendingFogReveal !== null || !justUnlocked) return;
+
+    const findPath = () =>
+      fogSvgRef.current?.querySelector<SVGPathElement>(`[data-fog-hole="${justUnlocked}"]`) ?? null;
+
+    const runReveal = (pathEl: SVGPathElement) => {
+      fogTweenRef.current?.kill();
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduceMotion) {
+        gsap.set(pathEl, { opacity: 1 });
+        if (lastSectorFogAnimating) onLastSectorFogComplete();
+        return;
+      }
+      fogTweenRef.current = gsap.fromTo(pathEl, { opacity: 0 }, {
+        opacity: 1,
+        duration: 2.2,
+        ease: 'power3.out',
+        ...(lastSectorFogAnimating ? { onComplete: onLastSectorFogComplete } : {}),
+      });
+    };
+
+    let pathEl = findPath();
+    if (pathEl) {
+      runReveal(pathEl);
+      return () => {
+        fogTweenRef.current?.kill();
+        fogTweenRef.current = null;
+      };
+    }
+
+    let raf = 0;
+    raf = requestAnimationFrame(() => {
+      pathEl = findPath();
+      if (pathEl) {
+        runReveal(pathEl);
+      } else if (lastSectorFogAnimating) {
+        onLastSectorFogComplete();
+      }
+    });
+
+    return () => {
+      cancelAnimationFrame(raf);
+      fogTweenRef.current?.kill();
+      fogTweenRef.current = null;
+    };
+  }, [pendingFogReveal, justUnlocked, unlockedLandmarks, lastSectorFogAnimating, onLastSectorFogComplete]);
 
   const handleNodeClick = (id: LandmarkId) => {
     playModalOpen();
@@ -205,11 +279,13 @@ export default function MapView({ unlockedLandmarks, justUnlocked, onSelectLandm
           doubleClick={{ step: 0.5 }}
         >
           <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }} contentStyle={{ width: "100%", height: "100%", position: "relative" }}>
-            {/* Placeholder Map Background */}
-            <div className="absolute inset-0 opacity-20" style={{
-              backgroundImage: 'radial-gradient(#111 2px, transparent 2px)',
-              backgroundSize: '20px 20px'
-            }}></div>
+            {/* Campus map image — cover keeps aspect ratio while filling the pan/zoom area */}
+            <div
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+              style={{
+                backgroundImage: 'url("/images/wildmaps%20(2).webp")',
+              }}
+            />
 
             {/* Simulated Paths */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-30" preserveAspectRatio="none">
@@ -219,28 +295,34 @@ export default function MapView({ unlockedLandmarks, justUnlocked, onSelectLandm
 
             {/* Fog of War Overlay */}
             <AnimatePresence>
-              {unlockedLandmarks.length < 3 && (
-                <motion.div 
+              {showFogOverlay && (
+                <motion.div
+                  key="fog-layer"
                   className="absolute inset-0 pointer-events-none z-10"
                   exit={{ opacity: 0 }}
                   transition={{ duration: 2 }}
                 >
-                  <svg width="100%" height="100%" viewBox="0 0 1000 1000" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg
+                    ref={fogSvgRef}
+                    width="100%"
+                    height="100%"
+                    viewBox="0 0 1000 1000"
+                    preserveAspectRatio="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
                     <defs>
-                      <filter id="fog-noise" x="-20%" y="-20%" width="140%" height="140%">
+                      <filter id={noiseFilterId} x="-20%" y="-20%" width="140%" height="140%">
                         <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="4" result="noise" />
                         <feColorMatrix type="matrix" values="0 0 0 0 0.8  0 0 0 0 0.8  0 0 0 0 0.8  1.5 0 0 0 -0.2" in="noise" />
                       </filter>
-                      <mask id="fog-mask">
+                      <mask id={maskId}>
                         <rect width="100%" height="100%" fill="white" />
-                        {unlockedLandmarks.map(id => (
-                          <motion.path 
-                            key={id} 
-                            d={SECTOR_PATHS[id]} 
-                            initial={id === justUnlocked ? { opacity: 0 } : false}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 2, ease: "easeOut" }}
-                            fill="black" 
+                        {fogHoleIds.map((id) => (
+                          <path
+                            key={id}
+                            data-fog-hole={id}
+                            d={SECTOR_PATHS[id]}
+                            fill="black"
                             stroke="black"
                             strokeWidth="150"
                             strokeLinejoin="round"
@@ -250,9 +332,9 @@ export default function MapView({ unlockedLandmarks, justUnlocked, onSelectLandm
                         ))}
                       </mask>
                     </defs>
-                    <g mask="url(#fog-mask)">
+                    <g mask={`url(#${maskId})`}>
                       <rect width="100%" height="100%" fill="rgba(17,17,17,0.9)" />
-                      <rect width="100%" height="100%" fill="white" filter="url(#fog-noise)" opacity="0.5" />
+                      <rect width="100%" height="100%" fill="white" filter={`url(#${noiseFilterId})`} opacity="0.5" />
                     </g>
                   </svg>
                 </motion.div>
@@ -266,24 +348,30 @@ export default function MapView({ unlockedLandmarks, justUnlocked, onSelectLandm
               return (
                 <button
                   key={lm.id}
+                  type="button"
                   onClick={() => handleNodeClick(lm.id)}
-                  className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20 group"
+                  className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20 group focus:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
                   style={{ left: `${lm.x}%`, top: `${lm.y}%` }}
                 >
-                  <motion.div 
-                    animate={!isUnlocked ? { scale: [1, 1.1, 1] } : {}}
-                    transition={!isUnlocked ? { repeat: Infinity, duration: 2, ease: "easeInOut" } : {}}
-                    className={`
-                      w-12 h-12 rounded-full flex items-center justify-center neo-brutalist
-                      ${isUnlocked ? 'bg-gold text-ink' : 'bg-maroon text-white shadow-[0_0_15px_rgba(128,0,0,0.6)]'}
-                      group-hover:scale-110 transition-transform
-                    `}
-                  >
-                    {isUnlocked ? <Unlock size={20} /> : <Lock size={20} />}
-                  </motion.div>
+                  {/* Locked: pulsing lock disc. Unlocked: no disc so map art stays visible — label is the control. */}
+                  {!isUnlocked && (
+                    <motion.div 
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                      className="
+                        w-12 h-12 rounded-full flex items-center justify-center neo-brutalist
+                        bg-maroon text-white shadow-[0_0_15px_rgba(128,0,0,0.6)]
+                        group-hover:scale-110 transition-transform
+                      "
+                    >
+                      <Lock size={20} />
+                    </motion.div>
+                  )}
                   <div className={`
-                    mt-2 px-2 py-1 text-xs font-bold uppercase neo-brutalist text-center
-                    ${isUnlocked ? 'bg-white text-ink max-w-[140px]' : 'bg-gray-800 text-white whitespace-nowrap'}
+                    px-2 py-1 text-xs font-bold uppercase neo-brutalist text-center
+                    ${isUnlocked
+                      ? 'bg-white text-ink max-w-[140px] group-hover:scale-105 group-active:scale-100 transition-transform'
+                      : 'mt-2 bg-gray-800 text-white whitespace-nowrap'}
                   `}>
                     {isUnlocked ? lm.name : 'Unknown Sector'}
                   </div>

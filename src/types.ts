@@ -22,8 +22,8 @@ export const LANDMARKS: Record<LandmarkId, Landmark> = {
     shortHint: "FOOD",
     funFact: "Home of the famous CIT-U meat roll! The café serves as the main dining area for students to relax and grab a bite.",
     imageUrl: '/images/Cafe_Hint.webp',
-    x: 65,
-    y: 20,
+    x: 59,
+    y: 33,
     icon: 'Coffee',
   },
   library: {
@@ -34,8 +34,8 @@ export const LANDMARKS: Record<LandmarkId, Landmark> = {
     shortHint: "BOOK",
     funFact: "Also known as the Learning Resource and Activity Center (LRAC), it won the 2023 Outstanding Academic/Research Library Award from PAARL.",
     imageUrl: '/images/Library_Hint.webp',
-    x: 20,
-    y: 50,
+    x: 27.5,
+    y: 56.5,
     icon: 'BookOpen',
   },
   statue: {
@@ -46,8 +46,8 @@ export const LANDMARKS: Record<LandmarkId, Landmark> = {
     shortHint: "LOGO",
     funFact: "The most photographed spot on campus. Every Teknoy is practically guaranteed to have at least one picture with this logo in the background throughout their time at CIT-U.",
     imageUrl: '/images/Monument_Hint.webp',
-    x: 80,
-    y: 80,
+    x: 86,
+    y: 74.5,
     icon: 'MapPin',
   },
 };
