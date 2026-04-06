@@ -106,7 +106,13 @@ function HintModal({
             <img 
               src={LANDMARKS[activeHint].imageUrl} 
               alt="Location hint" 
-              className="w-full h-32 object-cover"
+              className={`w-full h-32 object-cover ${
+                activeHint === 'cafe'
+                  ? 'object-[50%_22%]'
+                  : activeHint === 'statue'
+                    ? 'object-[50%_15%]'
+                    : 'object-center'
+              }`}
               referrerPolicy="no-referrer"
             />
           </div>
@@ -119,10 +125,9 @@ function HintModal({
               className="w-16 h-16 shrink-0 neo-brutalist bg-gold overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
             >
               <img 
-                src="https://api.dicebear.com/9.x/bottts/svg?seed=Guide&backgroundColor=FFD700" 
+                src="/images/TALKING%20CAT.gif" 
                 alt="Guide Character" 
                 className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
               />
             </div>
 

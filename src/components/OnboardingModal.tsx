@@ -18,6 +18,7 @@ export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
   
   const step = ONBOARDING_STEPS[currentStep];
   const isLastStep = currentStep === ONBOARDING_STEPS.length - 1;
+  const imageBgClass = currentStep % 2 === 0 ? 'bg-gold' : 'bg-maroon';
   
   const overlayRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -190,15 +191,14 @@ export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
             <div className="w-full mb-6 sm:mb-8">
               <div 
                 ref={imageRef}
-                className="w-full aspect-video neo-brutalist bg-white overflow-hidden relative group shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
+                className={`w-full aspect-video neo-brutalist overflow-hidden relative group shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] ${imageBgClass}`}
               >
-                <div className="absolute inset-0 bg-gold/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out z-10" />
+                <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out z-10" />
                 <img 
                   key={step.image}
                   src={step.image} 
                   alt={step.title} 
-                  className="w-full h-full object-cover relative z-0 animate-[fadeIn_0.3s_ease-out]"
-                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-contain relative z-0 animate-[fadeIn_0.3s_ease-out]"
                 />
               </div>
             </div>

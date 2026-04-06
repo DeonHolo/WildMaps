@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { LandmarkId, LANDMARKS } from '../types';
-import { Award, Lock, CheckCircle2, Trophy, User, Edit2, Check, Star, X, RotateCcw, Copy, Sparkles } from 'lucide-react';
+import { Award, Lock, CheckCircle2, Trophy, User, Edit2, Check, Star, X, Copy } from 'lucide-react';
 import { playSubtleClick, playModalOpen, playCopySound } from '../utils/audio';
 import { motion } from 'framer-motion';
 
@@ -18,21 +18,51 @@ interface BadgesViewProps {
   setAvatarSeed: (seed: string) => void;
 }
 
-const PRESET_AVATARS = [
-  'Felix&backgroundColor=b6e3f4',
-  'Aneka&backgroundColor=c0aede',
-  'Jasper&backgroundColor=d1d4f9',
-  'Brian&backgroundColor=ffd5dc',
-  'Ginger&backgroundColor=ffdfbf',
-  'Midnight&backgroundColor=c2e9c6'
+const PRESET_AVATARS: Array<{ id: string; src: string; bgClass: string }> = [
+  {
+    id: 'lion',
+    src: '/images/Profile Icon/LION icon‎.png',
+    bgClass: 'bg-sky-100',
+  },
+  {
+    id: 'ocelot',
+    src: '/images/Profile Icon/OCELOT icon.png',
+    bgClass: 'bg-emerald-100',
+  },
+  {
+    id: 'panther',
+    src: '/images/Profile Icon/PANTHER icon.png',
+    bgClass: 'bg-violet-100',
+  },
+  {
+    id: 'serval',
+    src: '/images/Profile Icon/SERVAL icon.png',
+    bgClass: 'bg-lime-100',
+  },
+  {
+    id: 'siamese',
+    src: '/images/Profile Icon/SIAMESE icon.png',
+    bgClass: 'bg-sky-100',
+  },
+  {
+    id: 'tiger',
+    src: '/images/Profile Icon/TIGER icon.png',
+    bgClass: 'bg-rose-100',
+  },
 ];
 
-// Helper to ensure old seeds without background colors still get a default gold background
+// Supports Dicebear seeds (legacy) and local /images/... paths (new).
 const getAvatarUrl = (seed: string) => {
+  if (seed.startsWith('/images/')) return encodeURI(seed);
   if (seed.includes('backgroundColor=')) {
     return `https://api.dicebear.com/9.x/bottts/svg?seed=${seed}`;
   }
   return `https://api.dicebear.com/9.x/bottts/svg?seed=${seed}&backgroundColor=FFD700`;
+};
+
+const getAvatarBgClass = (seed: string) => {
+  const preset = PRESET_AVATARS.find(p => p.src === seed);
+  return preset?.bgClass ?? 'bg-gold';
 };
 
 function RankModal({ unlockedCount, totalLandmarks, getRank, isComplete, onClose }: any) {
@@ -173,13 +203,6 @@ function AvatarModal({ avatarSeed, setAvatarSeed, onClose }: any) {
     setTempAvatarSeed(seed);
   };
 
-  const generateRandom = () => {
-    playSubtleClick();
-    const randomColors = ['b6e3f4', 'c0aede', 'd1d4f9', 'ffd5dc', 'ffdfbf', 'c2e9c6', 'FFD700', 'ffb3ba', 'baffc9', 'bae1ff'];
-    const randomColor = randomColors[Math.floor(Math.random() * randomColors.length)];
-    setTempAvatarSeed(`random-${Math.floor(Math.random() * 100000)}&backgroundColor=${randomColor}`);
-  };
-
   return (
     <div ref={overlayRef} className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
       <div ref={containerRef} className="neo-brutalist-card bg-bg w-full max-w-sm flex flex-col relative shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
@@ -191,41 +214,33 @@ function AvatarModal({ avatarSeed, setAvatarSeed, onClose }: any) {
         </div>
         <div className="p-4 flex flex-col gap-4">
           <div className="flex justify-center mb-2">
-            <div className="w-24 h-24 neo-brutalist bg-gold overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <div className={`w-24 h-24 neo-brutalist overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${getAvatarBgClass(tempAvatarSeed)}`}>
               <img 
                 src={getAvatarUrl(tempAvatarSeed)} 
                 alt="Current Avatar" 
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain p-2"
               />
             </div>
           </div>
           
           <div>
             <p className="text-xs font-bold uppercase text-gray-500 mb-2">Presets</p>
-            <div className="grid grid-cols-3 gap-3">
-              {PRESET_AVATARS.map(seed => (
+            <div className="grid grid-cols-3 gap-3 justify-items-center">
+              {PRESET_AVATARS.map(({ id, src, bgClass }) => (
                 <button 
-                  key={seed}
-                  onClick={() => selectPreset(seed)}
-                  className={`aspect-square neo-brutalist overflow-hidden transition-transform hover:scale-105 ${tempAvatarSeed === seed ? 'border-4 border-maroon shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' : 'border-2 border-ink'}`}
+                  key={id}
+                  onClick={() => selectPreset(src)}
+                  className={`w-24 h-24 neo-brutalist overflow-hidden transition-transform hover:scale-105 ${tempAvatarSeed === src ? 'ring-4 ring-maroon shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' : ''}`}
                 >
                   <img 
-                    src={getAvatarUrl(seed)} 
-                    alt={seed} 
-                    className="w-full h-full object-cover bg-gold"
+                    src={getAvatarUrl(src)} 
+                    alt={`${id} avatar`} 
+                    className={`w-full h-full object-contain p-2 ${bgClass}`}
                   />
                 </button>
               ))}
             </div>
           </div>
-
-          <button 
-            onClick={generateRandom}
-            className="w-full neo-brutalist bg-white hover:bg-gray-100 text-ink font-black uppercase py-2 flex items-center justify-center gap-2 transition-all hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)]"
-          >
-            <RotateCcw size={16} />
-            Generate Random
-          </button>
 
           <button 
             onClick={saveAvatar}
@@ -243,6 +258,12 @@ function AvatarModal({ avatarSeed, setAvatarSeed, onClose }: any) {
 function BadgeDetailModal({ landmark, unlockTime, onClose }: { landmark: typeof LANDMARKS[keyof typeof LANDMARKS], unlockTime?: string, onClose: () => void }) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const badgeImagePositionClass =
+    landmark.id === 'cafe'
+      ? 'object-[50%_22%]'
+      : landmark.id === 'statue'
+        ? 'object-[50%_15%]'
+        : 'object-center';
 
   useGSAP(() => {
     gsap.from(overlayRef.current, { opacity: 0, duration: 0.3 });
@@ -300,7 +321,7 @@ function BadgeDetailModal({ landmark, unlockTime, onClose }: { landmark: typeof 
             <img 
               src={landmark.imageUrl} 
               alt={landmark.name} 
-              className="w-full h-36 object-cover"
+              className={`w-full h-36 object-cover ${badgeImagePositionClass}`}
               referrerPolicy="no-referrer"
             />
           </motion.div>
@@ -322,8 +343,7 @@ function BadgeDetailModal({ landmark, unlockTime, onClose }: { landmark: typeof 
             transition={{ delay: 0.4 }}
           >
             <div className="flex items-center gap-1.5 mb-2">
-              <Sparkles size={14} className="text-maroon" />
-              <p className="text-[10px] font-bold uppercase text-ink tracking-widest">Fun Fact</p>
+              <p className="text-[10px] font-bold uppercase text-ink tracking-widest">Trivia</p>
             </div>
             <p className="text-xs text-ink leading-relaxed font-bold">{landmark.funFact}</p>
           </motion.div>
@@ -430,12 +450,12 @@ export default function BadgesView({ unlockedLandmarks, unlockTimes, playerName,
           <div className="flex items-start gap-4 relative z-10">
             <button 
               onClick={openAvatarModal}
-              className="w-16 h-16 shrink-0 neo-brutalist bg-gold overflow-hidden relative group cursor-pointer"
+              className={`w-16 h-16 shrink-0 neo-brutalist overflow-hidden relative group cursor-pointer ${getAvatarBgClass(avatarSeed)}`}
             >
               <img 
                 src={getAvatarUrl(avatarSeed)} 
                 alt="Avatar" 
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain p-1.5"
               />
               <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <Edit2 size={20} className="text-white" />

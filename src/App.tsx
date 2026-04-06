@@ -23,6 +23,21 @@ type ChangeViewOptions = {
 function AchievementModal({ landmark, onClose, width, height }: any) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const unlockedImageSrc =
+    landmark?.id === 'statue'
+      ? '/images/Monument_Hint_Revealed.png'
+      : landmark?.id === 'library'
+        ? '/images/Library_Hint_Revealed.png'
+        : landmark?.id === 'cafe'
+          ? '/images/Cafe_Hint_Revealed.png'
+        : landmark.imageUrl;
+  const unlockedImagePositionClass =
+    landmark?.id === 'cafe'
+      ? 'object-[50%_15%]'
+      : landmark?.id === 'statue'
+        ? 'object-[50%_10%]'
+        : 'object-center';
+  const unlockedImageFitClass = 'object-cover';
 
   useGSAP(() => {
     gsap.from(overlayRef.current, { opacity: 0, duration: 0.3 });
@@ -53,7 +68,11 @@ function AchievementModal({ landmark, onClose, width, height }: any) {
         </div>
         <p className="text-gray-800 font-bold mb-6 text-lg">You've successfully mapped {landmark.name}.</p>
         <div className="w-full h-40 mx-auto mb-6 neo-brutalist bg-white flex items-center justify-center overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-          <img src={landmark.imageUrl} alt="Unlocked" className="w-full h-full object-cover" />
+          <img
+            src={unlockedImageSrc}
+            alt="Unlocked"
+            className={`w-full h-full ${unlockedImageFitClass} ${unlockedImagePositionClass}`}
+          />
         </div>
         <button 
           onClick={handleClose}
@@ -126,9 +145,13 @@ function MapClearedModal({ onClose, width, height, playerName, totalLandmarks }:
 
           <div
             ref={characterRef}
-            className="w-full aspect-video neo-brutalist bg-white overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+            className="w-full aspect-video neo-brutalist bg-maroon overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
           >
-            <img src="https://api.dicebear.com/9.x/bottts/svg?seed=Guide&backgroundColor=FFD700" alt="Guide" className="w-full h-full object-cover" />
+            <img
+              src="/images/Earn%20Your%20Badges.png"
+              alt="Guide"
+              className="w-full h-full object-contain object-bottom px-2 pt-2 pb-0"
+            />
           </div>
 
           <p className="text-sm font-bold text-ink leading-relaxed text-left">
