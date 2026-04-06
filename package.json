@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
-    "gen:icons": "node scripts/generate-icons.mjs"
+    "gen:icons": "node scripts/generate-icons.mjs",
+    "opt:images": "node scripts/optimize-images.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",

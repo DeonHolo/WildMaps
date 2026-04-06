@@ -26,11 +26,11 @@ function AchievementModal({ landmark, onClose, width, height }: any) {
   const containerRef = useRef<HTMLDivElement>(null);
   const unlockedImageSrc =
     landmark?.id === 'statue'
-      ? '/images/Monument_Hint_Revealed.png'
+      ? '/images/Monument_Hint_Revealed.webp'
       : landmark?.id === 'library'
-        ? '/images/Library_Hint_Revealed.png'
+        ? '/images/Library_Hint_Revealed.webp'
         : landmark?.id === 'cafe'
-          ? '/images/Cafe_Hint_Revealed.png'
+          ? '/images/Cafe_Hint_Revealed.webp'
         : landmark.imageUrl;
   const unlockedImagePositionClass =
     landmark?.id === 'cafe'
@@ -149,7 +149,7 @@ function MapClearedModal({ onClose, width, height, playerName, totalLandmarks }:
             className="w-full aspect-video neo-brutalist bg-maroon overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
           >
             <img
-              src="/images/Earn%20Your%20Badges.png"
+              src="/images/Earn%20Your%20Badges.webp"
               alt="Guide"
               className="w-full h-full object-contain object-bottom px-2 pt-2 pb-0"
             />
