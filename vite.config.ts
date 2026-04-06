@@ -12,7 +12,7 @@ export default defineConfig(({mode}) => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg', 'app-icon.png', 'app-icon-192.png', 'app-icon-512.png', 'images/WildMaps! Logo no fog (trimmed).png'],
         manifest: {
           name: 'WildMaps',
           short_name: 'WildMaps',
@@ -22,19 +22,14 @@ export default defineConfig(({mode}) => {
           display: 'standalone',
           icons: [
             {
-              src: 'pwa-icon.svg',
-              sizes: '192x192',
-              type: 'image/svg+xml'
+              src: 'images/WildMaps! Logo no fog (trimmed).png',
+              sizes: 'any',
+              type: 'image/png'
             },
             {
-              src: 'pwa-icon.svg',
-              sizes: '512x512',
-              type: 'image/svg+xml'
-            },
-            {
-              src: 'pwa-icon.svg',
-              sizes: '512x512',
-              type: 'image/svg+xml',
+              src: 'images/WildMaps! Logo no fog (trimmed).png',
+              sizes: 'any',
+              type: 'image/png',
               purpose: 'any maskable'
             }
           ]

@@ -7,9 +7,15 @@
   "theme_color": "#800000",
   "icons": [
     {
-      "src": "/pwa-icon.svg",
+      "src": "/images/WildMaps! Logo no fog (trimmed).png",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/png"
+    },
+    {
+      "src": "/images/WildMaps! Logo no fog (trimmed).png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }

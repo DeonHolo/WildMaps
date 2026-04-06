@@ -3,6 +3,7 @@ import { LandmarkId, LANDMARKS } from '../types';
 import { Award, Lock, CheckCircle2, Trophy, User, Edit2, Check, Star, X, Copy } from 'lucide-react';
 import { playSubtleClick, playModalOpen, playCopySound } from '../utils/audio';
 import { motion } from 'framer-motion';
+import { AVATAR_PRESETS } from '../avatarPresets';
 
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -18,39 +19,6 @@ interface BadgesViewProps {
   setAvatarSeed: (seed: string) => void;
 }
 
-const PRESET_AVATARS: Array<{ id: string; src: string; bgClass: string }> = [
-  {
-    id: 'lion',
-    src: '/images/Profile Icon/LION icon‎.png',
-    bgClass: 'bg-sky-100',
-  },
-  {
-    id: 'ocelot',
-    src: '/images/Profile Icon/OCELOT icon.png',
-    bgClass: 'bg-emerald-100',
-  },
-  {
-    id: 'panther',
-    src: '/images/Profile Icon/PANTHER icon.png',
-    bgClass: 'bg-violet-100',
-  },
-  {
-    id: 'serval',
-    src: '/images/Profile Icon/SERVAL icon.png',
-    bgClass: 'bg-lime-100',
-  },
-  {
-    id: 'siamese',
-    src: '/images/Profile Icon/SIAMESE icon.png',
-    bgClass: 'bg-sky-100',
-  },
-  {
-    id: 'tiger',
-    src: '/images/Profile Icon/TIGER icon.png',
-    bgClass: 'bg-rose-100',
-  },
-];
-
 // Supports Dicebear seeds (legacy) and local /images/... paths (new).
 const getAvatarUrl = (seed: string) => {
   if (seed.startsWith('/images/')) return encodeURI(seed);
@@ -61,7 +29,7 @@ const getAvatarUrl = (seed: string) => {
 };
 
 const getAvatarBgClass = (seed: string) => {
-  const preset = PRESET_AVATARS.find(p => p.src === seed);
+  const preset = AVATAR_PRESETS.find(p => p.src === seed);
   return preset?.bgClass ?? 'bg-gold';
 };
 
@@ -226,7 +194,7 @@ function AvatarModal({ avatarSeed, setAvatarSeed, onClose }: any) {
           <div>
             <p className="text-xs font-bold uppercase text-gray-500 mb-2">Presets</p>
             <div className="grid grid-cols-3 gap-3 justify-items-center">
-              {PRESET_AVATARS.map(({ id, src, bgClass }) => (
+              {AVATAR_PRESETS.map(({ id, src, bgClass }) => (
                 <button 
                   key={id}
                   onClick={() => selectPreset(src)}

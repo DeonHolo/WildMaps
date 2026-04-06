@@ -12,6 +12,7 @@ import OnboardingModal from './components/OnboardingModal';
 import { playSubtleClick, playModalOpen, playSuccessChime, playGrandSuccessChime } from './utils/audio';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
+import { AVATAR_PRESET_SRCS } from './avatarPresets';
 
 gsap.registerPlugin(useGSAP);
 
@@ -223,9 +224,8 @@ export default function App() {
     if (savedAvatar) {
       setAvatarSeed(savedAvatar);
     } else {
-      const randomColors = ['b6e3f4', 'c0aede', 'd1d4f9', 'ffd5dc', 'ffdfbf', 'c2e9c6', 'FFD700', 'ffb3ba', 'baffc9', 'bae1ff'];
-      const randomColor = randomColors[Math.floor(Math.random() * randomColors.length)];
-      const newAvatar = `seed-${Math.floor(Math.random() * 100000)}&backgroundColor=${randomColor}`;
+      const newAvatar =
+        AVATAR_PRESET_SRCS[Math.floor(Math.random() * AVATAR_PRESET_SRCS.length)];
       setAvatarSeed(newAvatar);
       localStorage.setItem('wildmaps_avatar', newAvatar);
     }
