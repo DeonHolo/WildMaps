@@ -12,6 +12,17 @@ export default defineConfig(({mode}) => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
+        strategies: 'injectManifest',
+        srcDir: 'src',
+        filename: 'sw.ts',
+        injectManifest: {
+          // Workaround for Windows paths containing `'` (e.g. "Nichole's Project"):
+          // bundling to IIFE avoids emitting ESM imports with absolute file paths.
+          rollupFormat: 'iife',
+          // Match previous Workbox config: allow large bundles to be precached.
+          maximumFileSizeToCacheInBytes: 25 * 1024 * 1024,
+          globPatterns: ['**/*.{js,css,html,ico,png,webp,svg,json,wasm}'],
+        },
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg', 'app-icon.png', 'app-icon-192.png', 'app-icon-512.png', 'images/WildMaps! Logo no fog (trimmed).png'],
         manifest: {
           name: 'WildMaps',
@@ -34,82 +45,6 @@ export default defineConfig(({mode}) => {
             }
           ]
         },
-        workbox: {
-          globPatterns: ['**/*.{js,css,html,ico,png,webp,svg,json,wasm}'],
-          maximumFileSizeToCacheInBytes: 25 * 1024 * 1024, // allow large illustration PNGs
-          runtimeCaching: [
-            {
-              urlPattern: /^https:\/\/api\.dicebear\.com\/.*/i,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'dicebear-avatars',
-                expiration: {
-                  maxEntries: 50,
-                  maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
-                },
-                cacheableResponse: {
-                  statuses: [0, 200]
-                }
-              }
-            },
-            {
-              urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'google-fonts-cache',
-                expiration: {
-                  maxEntries: 10,
-                  maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-                },
-                cacheableResponse: {
-                  statuses: [0, 200]
-                }
-              }
-            },
-            {
-              urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'gstatic-fonts-cache',
-                expiration: {
-                  maxEntries: 10,
-                  maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-                },
-                cacheableResponse: {
-                  statuses: [0, 200]
-                }
-              }
-            },
-            {
-              urlPattern: /^https:\/\/storage\.googleapis\.com\/tfjs-models\/.*/i,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'tfjs-models',
-                expiration: {
-                  maxEntries: 50,
-                  maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-                },
-                cacheableResponse: {
-                  statuses: [0, 200]
-                }
-              }
-            },
-            {
-              urlPattern: /^https:\/\/tfhub\.dev\/.*/i,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'tfhub-models',
-                expiration: {
-                  maxEntries: 50,
-                  maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-                },
-                cacheableResponse: {
-                  statuses: [0, 200]
-                }
-              }
-            }
-          ]
-        }
       })
     ],
     define: {
