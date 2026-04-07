@@ -311,10 +311,9 @@ export default function App() {
   /** Called from MapView after GSAP finishes revealing the final sector's fog hole. */
   const handleLastSectorFogComplete = useCallback(() => {
     setLastSectorFogAnimating(false);
-    setTimeout(() => {
-      setShowAllUnlockedModal(true);
-      playGrandSuccessChime();
-    }, 500);
+    // Show immediately so it feels snappy after the last unlock.
+    setShowAllUnlockedModal(true);
+    playGrandSuccessChime();
   }, []);
 
   const startScan = (id: LandmarkId) => {

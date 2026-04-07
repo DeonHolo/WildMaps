@@ -214,7 +214,7 @@ export default function MapView({
       }
       fogTweenRef.current = gsap.fromTo(pathEl, { opacity: 0 }, {
         opacity: 1,
-        duration: 2.2,
+        duration: lastSectorFogAnimating ? 0.9 : 2.2,
         ease: 'power3.out',
         ...(lastSectorFogAnimating ? { onComplete: onLastSectorFogComplete } : {}),
       });
