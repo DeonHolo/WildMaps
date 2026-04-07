@@ -1,6 +1,20 @@
 import { useState, useRef } from 'react';
 import { LandmarkId, LANDMARKS } from '../types';
-import { Award, Lock, CheckCircle2, Trophy, User, Edit2, Check, Star, X, Copy } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import {
+  Lock,
+  CheckCircle2,
+  Trophy,
+  User,
+  Edit2,
+  Check,
+  Star,
+  X,
+  Copy,
+  Coffee,
+  Library,
+  Landmark,
+} from 'lucide-react';
 import { playSubtleClick, playModalOpen, playCopySound } from '../utils/audio';
 import { motion } from 'framer-motion';
 import { AVATAR_PRESETS } from '../avatarPresets';
@@ -31,6 +45,13 @@ const getAvatarUrl = (seed: string) => {
 const getAvatarBgClass = (seed: string) => {
   const preset = AVATAR_PRESETS.find(p => p.src === seed);
   return preset?.bgClass ?? 'bg-gold';
+};
+
+/** Landmark list + detail: one Lucide per sector (place-readable at small sizes). */
+const LANDMARK_BADGE_ICON: Record<LandmarkId, LucideIcon> = {
+  cafe: Coffee,
+  library: Library,
+  statue: Landmark,
 };
 
 function RankModal({ unlockedCount, totalLandmarks, getRank, isComplete, onClose }: any) {
@@ -226,6 +247,7 @@ function AvatarModal({ avatarSeed, setAvatarSeed, onClose }: any) {
 function BadgeDetailModal({ landmark, unlockTime, onClose }: { landmark: typeof LANDMARKS[keyof typeof LANDMARKS], unlockTime?: string, onClose: () => void }) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const BadgeIcon = LANDMARK_BADGE_ICON[landmark.id];
   const badgeImagePositionClass =
     landmark.id === 'cafe'
       ? 'object-[50%_22%]'
@@ -269,7 +291,7 @@ function BadgeDetailModal({ landmark, unlockTime, onClose }: { landmark: typeof 
         {/* Header */}
         <div className="bg-gold text-ink p-3 flex justify-between items-center border-b-4 border-ink">
           <h3 className="font-bold uppercase tracking-tight text-lg flex items-center gap-2">
-            <Award size={18} />
+            <BadgeIcon className="w-9 h-9 shrink-0 text-ink" strokeWidth={2.25} aria-hidden />
             {landmark.name}
           </h3>
           <button onClick={handleClose} className="hover:bg-black/10 p-1 transition-colors hover:rotate-90 duration-300">
@@ -496,6 +518,7 @@ export default function BadgesView({ unlockedLandmarks, unlockTimes, playerName,
         <div className="grid grid-cols-1 gap-4 pb-20">
           {Object.values(LANDMARKS).map(lm => {
             const isUnlocked = unlockedLandmarks.includes(lm.id);
+            const BadgeIcon = LANDMARK_BADGE_ICON[lm.id];
 
             return (
               <div 
@@ -513,14 +536,16 @@ export default function BadgesView({ unlockedLandmarks, unlockTimes, playerName,
                     : 'bg-gray-100 text-gray-500 border-2 border-dashed border-gray-400 shadow-none'}
                 `}
               >
-                <div className={`
-                  w-16 h-16 shrink-0 flex items-center justify-center mr-4 border-2
+                <div
+                  className={`
+                  w-16 h-16 shrink-0 mr-4 border-2 overflow-hidden flex items-center justify-center p-1
                   ${isUnlocked ? 'bg-white border-ink rounded-full' : 'bg-gray-200 border-gray-400 rounded-lg'}
-                `}>
+                `}
+                >
                   {isUnlocked ? (
-                    <Award size={32} className="text-maroon" />
+                    <BadgeIcon className="w-8 h-8 text-maroon" strokeWidth={2.25} aria-hidden />
                   ) : (
-                    <Lock size={32} className="text-gray-400" />
+                    <Lock size={32} className="text-gray-400" aria-hidden />
                   )}
                 </div>
                 

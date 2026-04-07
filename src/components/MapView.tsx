@@ -368,12 +368,19 @@ export default function MapView({
                     </motion.div>
                   )}
                   <div className={`
-                    px-2 py-1 text-xs font-bold uppercase neo-brutalist text-center
+                    px-2 py-1.5 text-xs font-bold uppercase neo-brutalist text-center
                     ${isUnlocked
                       ? 'bg-white text-ink max-w-[140px] group-hover:scale-105 group-active:scale-100 transition-transform'
-                      : 'mt-2 bg-gray-800 text-white whitespace-nowrap'}
+                      : 'mt-2 bg-gray-800 text-white leading-tight w-min max-w-[5.5rem]'}
                   `}>
-                    {isUnlocked ? lm.name : 'Unknown Sector'}
+                    {isUnlocked ? (
+                      lm.name
+                    ) : (
+                      <>
+                        <span className="block">Unknown</span>
+                        <span className="block">Sector</span>
+                      </>
+                    )}
                   </div>
                 </button>
               );

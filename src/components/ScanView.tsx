@@ -318,14 +318,17 @@ export default function ScanView({ targetId, unlockedLandmarks, onUnlock, onCanc
           )}
         </div>
 
-        {/* Debug button for easy testing without a real camera/model match */}
+        {/* Dev-only unlock — tucked in the corner so it doesn’t dominate the panel */}
         {!isFreeMode && (
-          <button 
-            onClick={handleDebugUnlock}
-            className="w-full mt-4 py-2 text-xs font-mono text-gray-500 underline hover:text-ink"
-          >
-            [Debug] Force Unlock Sector
-          </button>
+          <div className="flex justify-end mt-1">
+            <button
+              type="button"
+              onClick={handleDebugUnlock}
+              className="text-[10px] leading-tight font-mono text-gray-400/90 hover:text-gray-600 px-1 py-0.5 rounded-sm hover:bg-black/[0.04] text-right"
+            >
+              [debug] Force unlock
+            </button>
+          </div>
         )}
       </div>
     </div>

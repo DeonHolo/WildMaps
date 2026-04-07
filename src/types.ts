@@ -47,7 +47,7 @@ export const LANDMARKS: Record<LandmarkId, Landmark> = {
     funFact: "The most photographed spot on campus. Every Teknoy is practically guaranteed to have at least one picture with this logo in the background throughout their time at CIT-U.",
     imageUrl: '/images/Monument_Hint.webp',
     x: 86,
-    y: 74.5,
+    y: 74.8,
     icon: 'MapPin',
   },
 };
