@@ -29,7 +29,7 @@ function AchievementModal({ landmark, onClose, width, height }: any) {
     landmark?.id === 'cafe'
       ? 'object-[50%_15%]'
       : landmark?.id === 'statue'
-        ? 'object-[50%_10%]'
+        ? 'object-[50%_15.8%]'
         : 'object-center';
   const unlockedImageFitClass = 'object-cover';
 
