@@ -55,12 +55,13 @@ Developed with a striking **Neo-Brutalist** design aesthetic, fluid animations, 
 
 ---
 
-## 🎮 How to Play
+## How to Play
 
-1. **Open the Map**: Locate the hidden landmark zones on the CIT-U campus map.
-2. **Go to the Location**: Physically walk to the real-world location.
-3. **Scan the Landmark**: Open the camera tab and point it at the landmark. The AI model will verify your location.
-4. **Collect Badges**: Earn badges for every landmark found and level up your Explorer Rank!
+1. **Visit the website**: Open `https://wildmaps.vercel.app/`
+2. **Open the Map**: Locate the hidden landmark zones on the CIT-U campus map.
+3. **Go to the Location**: Physically walk to the real-world location.
+4. **Scan the Landmark**: Open the camera tab and point it at the landmark. The AI model will verify your location.
+5. **Collect Badges**: Earn badges for every landmark found and level up your Explorer Rank!
 
 ---
 
