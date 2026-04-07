@@ -109,13 +109,13 @@ function HintModal({
           {/* Building Image */}
           <div className="neo-brutalist overflow-hidden bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
             <img 
-              src={LANDMARKS[activeHint].imageUrl} 
+              src={isUnlocked ? LANDMARKS[activeHint].imageUrlRevealed : LANDMARKS[activeHint].imageUrl} 
               alt="Location hint" 
               className={`w-full h-32 object-cover ${
                 activeHint === 'cafe'
                   ? 'object-[50%_22%]'
                   : activeHint === 'statue'
-                    ? 'object-[50%_15%]'
+                    ? 'object-[50%_15.8%]'
                     : 'object-center'
               }`}
               referrerPolicy="no-referrer"

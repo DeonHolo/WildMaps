@@ -309,7 +309,7 @@ function BadgeDetailModal({ landmark, unlockTime, onClose }: { landmark: typeof 
             transition={{ delay: 0.2 }}
           >
             <img 
-              src={landmark.imageUrl} 
+              src={landmark.imageUrlProfile} 
               alt={landmark.name} 
               className={`w-full h-36 object-cover ${badgeImagePositionClass}`}
               referrerPolicy="no-referrer"

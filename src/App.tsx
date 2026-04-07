@@ -24,14 +24,7 @@ type ChangeViewOptions = {
 function AchievementModal({ landmark, onClose, width, height }: any) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const unlockedImageSrc =
-    landmark?.id === 'statue'
-      ? '/images/Monument_Hint_Revealed.webp'
-      : landmark?.id === 'library'
-        ? '/images/Library_Hint_Revealed.webp'
-        : landmark?.id === 'cafe'
-          ? '/images/Cafe_Hint_Revealed.webp'
-        : landmark.imageUrl;
+  const unlockedImageSrc = landmark.imageUrlRevealed ?? landmark.imageUrl;
   const unlockedImagePositionClass =
     landmark?.id === 'cafe'
       ? 'object-[50%_15%]'
