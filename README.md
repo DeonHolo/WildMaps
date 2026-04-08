@@ -66,5 +66,5 @@ Developed with a striking **Neo-Brutalist** design aesthetic, fluid animations, 
 ---
 
 <div align="center">
-  <p>Built with ❤️ by Deon Holo</p>
+  <p>Built with ❤️ by Deon Holo for Tech Artisans</p>
 </div>
